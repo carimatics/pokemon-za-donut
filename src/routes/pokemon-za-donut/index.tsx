@@ -4,12 +4,14 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
+  getSortedRowModel,
   type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table'
 import { berries } from '@/data/berries'
 import { donuts } from '@/data/donuts'
 import { findRequiredCombinations } from '@/lib/finder'
-import type { Berry, BerryStock, DonutRecipe } from '@/lib/types'
+import type { Berry, BerryStock, DonutRecipe, Donut } from '@/lib/types'
 
 export const Route = createFileRoute('/pokemon-za-donut/')({
   component: App,
@@ -21,9 +23,10 @@ function App() {
   const [hyperFilter, setHyperFilter] = useState<'all' | 'true' | 'false'>('all')
   const [searchText, setSearchText] = useState('')
   const [selectedDonuts, setSelectedDonuts] = useState<Set<string>>(new Set())
-  const [slots, setSlots] = useState<number>(10)
+  const [slots, setSlots] = useState<number>(8)
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
-  const [activeTab, setActiveTab] = useState<'input' | 'results'>('input')
+  const [activeTab, setActiveTab] = useState<'donuts' | 'berries' | 'results'>('donuts')
+  const [recipeSorting, setRecipeSorting] = useState<SortingState>([])
 
   // Filter berries based on hyper filter and search text
   const filteredBerries = useMemo(() => {
@@ -117,11 +120,200 @@ function App() {
     [berryStocks]
   )
 
-  // Create table instance
-  const table = useReactTable({
+  // Create berry table instance
+  const berryTable = useReactTable({
     data: filteredBerries,
     columns,
     getCoreRowModel: getCoreRowModel(),
+  })
+
+  // Donut selection table columns
+  const donutColumns = useMemo<ColumnDef<Donut>[]>(
+    () => [
+      {
+        id: 'select',
+        header: '選択',
+        cell: info => {
+          const donut = info.row.original
+          return (
+            <input
+              type="checkbox"
+              checked={selectedDonuts.has(donut.id)}
+              onChange={() => handleDonutToggle(donut.id)}
+              className="w-4 h-4"
+            />
+          )
+        },
+      },
+      {
+        accessorKey: 'name',
+        header: 'ドーナツ名',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'flavors.sweet',
+        header: 'Sweet',
+        cell: info => info.row.original.flavors.sweet,
+      },
+      {
+        accessorKey: 'flavors.spicy',
+        header: 'Spicy',
+        cell: info => info.row.original.flavors.spicy,
+      },
+      {
+        accessorKey: 'flavors.sour',
+        header: 'Sour',
+        cell: info => info.row.original.flavors.sour,
+      },
+      {
+        accessorKey: 'flavors.bitter',
+        header: 'Bitter',
+        cell: info => info.row.original.flavors.bitter,
+      },
+      {
+        accessorKey: 'flavors.fresh',
+        header: 'Fresh',
+        cell: info => info.row.original.flavors.fresh,
+      },
+    ],
+    [selectedDonuts]
+  )
+
+  // Create donut table instance
+  const donutTable = useReactTable({
+    data: donuts,
+    columns: donutColumns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  // Flatten recipes for table display
+  type RecipeRow = {
+    donutName: string
+    recipeIndex: number
+    berries: string
+    totalCalories: number
+    totalLevel: number
+    sweet: number
+    spicy: number
+    sour: number
+    bitter: number
+    fresh: number
+  }
+
+  const recipeRows = useMemo<RecipeRow[]>(() => {
+    const rows: RecipeRow[] = []
+    recipes.forEach((donutRecipes, donutId) => {
+      const donut = donuts.find(d => d.id === donutId)
+      if (!donut) return
+
+      donutRecipes.forEach((recipe, index) => {
+        const totalCalories = recipe.stocks.reduce(
+          (sum, stock) => sum + stock.berry.calories * stock.count,
+          0
+        )
+        const totalLevel = recipe.stocks.reduce(
+          (sum, stock) => sum + stock.berry.level * stock.count,
+          0
+        )
+        const totalFlavors = recipe.stocks.reduce(
+          (acc, stock) => ({
+            sweet: acc.sweet + stock.berry.flavors.sweet * stock.count,
+            spicy: acc.spicy + stock.berry.flavors.spicy * stock.count,
+            sour: acc.sour + stock.berry.flavors.sour * stock.count,
+            bitter: acc.bitter + stock.berry.flavors.bitter * stock.count,
+            fresh: acc.fresh + stock.berry.flavors.fresh * stock.count,
+          }),
+          { sweet: 0, spicy: 0, sour: 0, bitter: 0, fresh: 0 }
+        )
+
+        const berriesText = recipe.stocks
+          .map(stock => `${stock.berry.name} x${stock.count}`)
+          .join(', ')
+
+        rows.push({
+          donutName: donut.name,
+          recipeIndex: index + 1,
+          berries: berriesText,
+          totalCalories,
+          totalLevel,
+          sweet: totalFlavors.sweet,
+          spicy: totalFlavors.spicy,
+          sour: totalFlavors.sour,
+          bitter: totalFlavors.bitter,
+          fresh: totalFlavors.fresh,
+        })
+      })
+    })
+    return rows
+  }, [recipes])
+
+  // Recipe result table columns
+  const recipeColumns = useMemo<ColumnDef<RecipeRow>[]>(
+    () => [
+      {
+        accessorKey: 'donutName',
+        header: 'ドーナツ',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'recipeIndex',
+        header: 'レシピ#',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'berries',
+        header: '使用きのみ',
+        cell: info => <div className="text-sm">{info.getValue() as string}</div>,
+      },
+      {
+        accessorKey: 'totalCalories',
+        header: '合計カロリー',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'totalLevel',
+        header: '合計レベル',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'sweet',
+        header: 'Sweet',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'spicy',
+        header: 'Spicy',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'sour',
+        header: 'Sour',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'bitter',
+        header: 'Bitter',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'fresh',
+        header: 'Fresh',
+        cell: info => info.getValue(),
+      },
+    ],
+    []
+  )
+
+  // Create recipe table instance with sorting
+  const recipeTable = useReactTable({
+    data: recipeRows,
+    columns: recipeColumns,
+    state: {
+      sorting: recipeSorting,
+    },
+    onSortingChange: setRecipeSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   // Handle berry stock change
@@ -179,14 +371,24 @@ function App() {
       <div className="border-b border-gray-200 mb-6">
         <nav className="flex gap-4">
           <button
-            onClick={() => setActiveTab('input')}
+            onClick={() => setActiveTab('donuts')}
             className={`py-2 px-4 border-b-2 font-medium transition-colors ${
-              activeTab === 'input'
+              activeTab === 'donuts'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            入力
+            ドーナツ選択
+          </button>
+          <button
+            onClick={() => setActiveTab('berries')}
+            className={`py-2 px-4 border-b-2 font-medium transition-colors ${
+              activeTab === 'berries'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            きのみ個数入力
           </button>
           <button
             onClick={() => setActiveTab('results')}
@@ -202,109 +404,14 @@ function App() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'input' ? (
-        <div className="space-y-8">
-          {/* Berry Stock Section */}
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">Berry Stock</h2>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
+      {activeTab === 'donuts' ? (
+        /* Donut Selection Tab */
+        <section className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">ドーナツ選択</h2>
+            <div className="flex gap-4 items-center">
               <div className="flex gap-2 items-center">
-                <label className="font-medium">きのみ種別:</label>
-                <select
-                  value={hyperFilter}
-                  onChange={(e) => setHyperFilter(e.target.value as 'all' | 'true' | 'false')}
-                  className="border rounded px-2 py-1"
-                >
-                  <option value="all">すべて</option>
-                  <option value="true">異次元のみ</option>
-                  <option value="false">通常のみ</option>
-                </select>
-              </div>
-
-              <div className="flex gap-2 items-center flex-1">
-                <label className="font-medium">Search:</label>
-                <input
-                  type="text"
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Search by name or ID..."
-                  className="border rounded px-3 py-1 flex-1 max-w-md"
-                />
-              </div>
-            </div>
-
-            {/* Berry Table using react-table */}
-            <div className="overflow-x-auto border rounded">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className="hover:bg-gray-50">
-                      {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-4 py-2 text-sm">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          {/* Donut Selection and Slot Configuration */}
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">Recipe Finder Configuration</h2>
-
-            <div className="space-y-4">
-              {/* Donut Selection */}
-              <div>
-                <label className="font-medium block mb-2">Select Donuts:</label>
-                <div className="space-y-2">
-                  {donuts.map(donut => (
-                    <label key={donut.id} className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedDonuts.has(donut.id)}
-                        onChange={() => handleDonutToggle(donut.id)}
-                        className="w-4 h-4 mt-1"
-                      />
-                      <div className="flex flex-col">
-                        <span>{donut.name}</span>
-                        <span className="text-sm text-gray-500">
-                          Sweet: {donut.flavors.sweet}, Spicy: {donut.flavors.spicy},
-                          Sour: {donut.flavors.sour}, Bitter: {donut.flavors.bitter},
-                          Fresh: {donut.flavors.fresh}
-                        </span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Slot Number */}
-              <div className="flex gap-2 items-center">
-                <label className="font-medium">Slot Count:</label>
+                <label className="font-medium">利用できるきのみ数:</label>
                 <input
                   type="number"
                   min="1"
@@ -313,109 +420,169 @@ function App() {
                   className="border rounded px-3 py-1 w-24"
                 />
               </div>
-
-              {/* Find Recipes Button */}
               <button
                 onClick={handleFindRecipes}
                 disabled={selectedDonuts.size === 0}
                 className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                Find Recipes
+                レシピを検索
               </button>
             </div>
-          </section>
-        </div>
+          </div>
+
+          {/* Donut Table */}
+          <div className="overflow-x-auto border rounded">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                {donutTable.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <th
+                        key={header.id}
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {donutTable.getRowModel().rows.map(row => (
+                  <tr key={row.id} className="hover:bg-gray-50">
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className="px-4 py-3 text-sm">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : activeTab === 'berries' ? (
+        /* Berry Stock Input Tab */
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">きのみ個数入力</h2>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex gap-2 items-center">
+              <label className="font-medium">きのみ種別:</label>
+              <select
+                value={hyperFilter}
+                onChange={(e) => setHyperFilter(e.target.value as 'all' | 'true' | 'false')}
+                className="border rounded px-2 py-1"
+              >
+                <option value="all">すべて</option>
+                <option value="true">異次元のみ</option>
+                <option value="false">通常のみ</option>
+              </select>
+            </div>
+
+            <div className="flex gap-2 items-center flex-1">
+              <label className="font-medium">Search:</label>
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Search by name or ID..."
+                className="border rounded px-3 py-1 flex-1 max-w-md"
+              />
+            </div>
+          </div>
+
+          {/* Berry Table using react-table */}
+          <div className="overflow-x-auto border rounded">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                {berryTable.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <th
+                        key={header.id}
+                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {berryTable.getRowModel().rows.map(row => (
+                  <tr key={row.id} className="hover:bg-gray-50">
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className="px-4 py-2 text-sm">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       ) : (
         /* Recipe Results Tab */
-        <section className="space-y-6">
-          <h2 className="text-2xl font-semibold">Recipe Results</h2>
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">レシピ検索結果</h2>
 
-          {recipes.size === 0 ? (
-            <p className="text-gray-500">No recipes found. Please go to the input tab and search for recipes.</p>
+          {recipeRows.length === 0 ? (
+            <p className="text-gray-500">レシピが見つかりませんでした。ドーナツ選択タブでドーナツを選択し、レシピを検索してください。</p>
           ) : (
-            Array.from(recipes.entries()).map(([donutId, donutRecipes]) => {
-              const donut = donuts.find(d => d.id === donutId)
-              if (!donut) return null
-
-              return (
-                <div key={donutId} className="space-y-4">
-                  <h3 className="text-xl font-semibold">
-                    {donut.name} ({donutRecipes.length} recipes found)
-                  </h3>
-
-                  {donutRecipes.length === 0 ? (
-                    <p className="text-gray-500">No recipes found with current berry stocks.</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {donutRecipes.map((recipe, index) => {
-                        // Calculate totals
-                        const totalCalories = recipe.stocks.reduce(
-                          (sum, stock) => sum + stock.berry.calories * stock.count,
-                          0
-                        )
-                        const totalLevel = recipe.stocks.reduce(
-                          (sum, stock) => sum + stock.berry.level * stock.count,
-                          0
-                        )
-                        const totalFlavors = recipe.stocks.reduce(
-                          (acc, stock) => ({
-                            sweet: acc.sweet + stock.berry.flavors.sweet * stock.count,
-                            spicy: acc.spicy + stock.berry.flavors.spicy * stock.count,
-                            sour: acc.sour + stock.berry.flavors.sour * stock.count,
-                            bitter: acc.bitter + stock.berry.flavors.bitter * stock.count,
-                            fresh: acc.fresh + stock.berry.flavors.fresh * stock.count,
-                          }),
-                          { sweet: 0, spicy: 0, sour: 0, bitter: 0, fresh: 0 }
-                        )
-
-                        return (
-                          <div key={index} className="border rounded p-4 bg-gray-50">
-                            <h4 className="font-medium mb-2">Recipe #{index + 1}</h4>
-
-                            {/* Berry usage */}
-                            <div className="mb-3">
-                              <p className="text-sm font-medium mb-1">Berries Used:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {recipe.stocks.map((stock, i) => (
-                                  <span key={i} className="bg-white px-3 py-1 rounded border text-sm">
-                                    {stock.berry.name} x {stock.count}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Totals */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-                              <div>
-                                <span className="font-medium">Total Calories:</span> {totalCalories}
-                              </div>
-                              <div>
-                                <span className="font-medium">Total Level:</span> {totalLevel}
-                              </div>
-                              <div>
-                                <span className="font-medium">Sweet:</span> {totalFlavors.sweet}
-                              </div>
-                              <div>
-                                <span className="font-medium">Spicy:</span> {totalFlavors.spicy}
-                              </div>
-                              <div>
-                                <span className="font-medium">Sour:</span> {totalFlavors.sour}
-                              </div>
-                              <div>
-                                <span className="font-medium">Bitter:</span> {totalFlavors.bitter}
-                              </div>
-                              <div>
-                                <span className="font-medium">Fresh:</span> {totalFlavors.fresh}
-                              </div>
-                            </div>
+            <div className="overflow-x-auto border rounded">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  {recipeTable.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th
+                          key={header.id}
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <div className="flex items-center gap-1">
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                            {{
+                              asc: ' ↑',
+                              desc: ' ↓',
+                            }[header.column.getIsSorted() as string] ?? null}
                           </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {recipeTable.getRowModel().rows.map(row => (
+                    <tr key={row.id} className="hover:bg-gray-50">
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id} className="px-4 py-3 text-sm">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       )}
