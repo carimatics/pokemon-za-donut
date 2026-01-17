@@ -409,24 +409,16 @@ function App() {
         <section className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-semibold">ドーナツ選択</h2>
-            <div className="flex gap-4 items-center">
-              <div className="flex gap-2 items-center">
-                <label className="font-medium">利用できるきのみ数:</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={slots}
-                  onChange={(e) => setSlots(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="border rounded px-3 py-1 w-24"
-                />
-              </div>
-              <button
-                onClick={handleFindRecipes}
-                disabled={selectedDonuts.size === 0}
-                className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                レシピを検索
-              </button>
+            <div className="flex gap-2 items-center">
+              <label className="font-medium" htmlFor="slots-input">利用できるきのみ数:</label>
+              <input
+                id="slots-input"
+                type="number"
+                min="1"
+                value={slots}
+                onChange={(e) => setSlots(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                className="border rounded px-3 py-1 w-24"
+              />
             </div>
           </div>
 
@@ -474,8 +466,9 @@ function App() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex gap-2 items-center">
-              <label className="font-medium">きのみ種別:</label>
+              <label className="font-medium" htmlFor="hyper-filter">きのみ種別:</label>
               <select
+                id="hyper-filter"
                 value={hyperFilter}
                 onChange={(e) => setHyperFilter(e.target.value as 'all' | 'true' | 'false')}
                 className="border rounded px-2 py-1"
@@ -487,8 +480,9 @@ function App() {
             </div>
 
             <div className="flex gap-2 items-center flex-1">
-              <label className="font-medium">Search:</label>
+              <label className="font-medium" htmlFor="search-input">Search:</label>
               <input
+                id="search-input"
                 type="text"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
@@ -586,6 +580,32 @@ function App() {
           )}
         </section>
       )}
+
+      {/* Floating Action Button */}
+      <button
+        type="button"
+        onClick={handleFindRecipes}
+        disabled={selectedDonuts.size === 0}
+        className="fixed bottom-8 right-8 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors z-50"
+        title="レシピを検索"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-6 h-6"
+          aria-label="検索アイコン"
+        >
+          <title>検索</title>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+          />
+        </svg>
+      </button>
     </div>
   )
 }
