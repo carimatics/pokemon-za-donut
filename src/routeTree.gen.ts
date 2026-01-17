@@ -9,68 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as DemoTableRouteImport } from './routes/demo/table'
+import { Route as PokemonZaDonutIndexRouteImport } from './routes/pokemon-za-donut/index'
+import { Route as PokemonZaDonutDemoTableRouteImport } from './routes/pokemon-za-donut/demo/table'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PokemonZaDonutIndexRoute = PokemonZaDonutIndexRouteImport.update({
+  id: '/pokemon-za-donut/',
+  path: '/pokemon-za-donut/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoTableRoute = DemoTableRouteImport.update({
-  id: '/demo/table',
-  path: '/demo/table',
+const PokemonZaDonutDemoTableRoute = PokemonZaDonutDemoTableRouteImport.update({
+  id: '/pokemon-za-donut/demo/table',
+  path: '/pokemon-za-donut/demo/table',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/demo/table': typeof DemoTableRoute
+  '/pokemon-za-donut': typeof PokemonZaDonutIndexRoute
+  '/pokemon-za-donut/demo/table': typeof PokemonZaDonutDemoTableRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/demo/table': typeof DemoTableRoute
+  '/pokemon-za-donut': typeof PokemonZaDonutIndexRoute
+  '/pokemon-za-donut/demo/table': typeof PokemonZaDonutDemoTableRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/demo/table': typeof DemoTableRoute
+  '/pokemon-za-donut/': typeof PokemonZaDonutIndexRoute
+  '/pokemon-za-donut/demo/table': typeof PokemonZaDonutDemoTableRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo/table'
+  fullPaths: '/pokemon-za-donut' | '/pokemon-za-donut/demo/table'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/table'
-  id: '__root__' | '/' | '/demo/table'
+  to: '/pokemon-za-donut' | '/pokemon-za-donut/demo/table'
+  id: '__root__' | '/pokemon-za-donut/' | '/pokemon-za-donut/demo/table'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  DemoTableRoute: typeof DemoTableRoute
+  PokemonZaDonutIndexRoute: typeof PokemonZaDonutIndexRoute
+  PokemonZaDonutDemoTableRoute: typeof PokemonZaDonutDemoTableRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/pokemon-za-donut/': {
+      id: '/pokemon-za-donut/'
+      path: '/pokemon-za-donut'
+      fullPath: '/pokemon-za-donut'
+      preLoaderRoute: typeof PokemonZaDonutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/table': {
-      id: '/demo/table'
-      path: '/demo/table'
-      fullPath: '/demo/table'
-      preLoaderRoute: typeof DemoTableRouteImport
+    '/pokemon-za-donut/demo/table': {
+      id: '/pokemon-za-donut/demo/table'
+      path: '/pokemon-za-donut/demo/table'
+      fullPath: '/pokemon-za-donut/demo/table'
+      preLoaderRoute: typeof PokemonZaDonutDemoTableRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  DemoTableRoute: DemoTableRoute,
+  PokemonZaDonutIndexRoute: PokemonZaDonutIndexRoute,
+  PokemonZaDonutDemoTableRoute: PokemonZaDonutDemoTableRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -11,7 +11,7 @@ import {
 } from '@tanstack/react-table'
 import { compareItems, rankItem } from '@tanstack/match-sorter-utils'
 
-import { makeData } from '@/data/demo-table-data'
+import { makeData } from '@/data/demo-table-data.ts'
 
 import type {
   Column,
@@ -22,9 +22,9 @@ import type {
 } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
-import type { Person } from '@/data/demo-table-data'
+import type { Person } from '@/data/demo-table-data.ts'
 
-export const Route = createFileRoute('/demo/table')({
+export const Route = createFileRoute('/pokemon-za-donut/demo/table')({
   component: TableDemo,
 })
 
