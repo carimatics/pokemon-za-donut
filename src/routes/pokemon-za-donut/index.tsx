@@ -324,6 +324,11 @@ function App() {
     }))
   }
 
+  // Reset all berry stocks
+  const handleResetStocks = () => {
+    setBerryStocks({})
+  }
+
   // Handle donut selection
   const handleDonutToggle = (donutId: string) => {
     setSelectedDonuts(prev => {
@@ -461,7 +466,16 @@ function App() {
       ) : activeTab === 'berries' ? (
         /* Berry Stock Input Tab */
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">きのみ個数入力</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">きのみ個数入力</h2>
+            <button
+              type="button"
+              onClick={handleResetStocks}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+            >
+              すべてリセット
+            </button>
+          </div>
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
