@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -6,6 +6,7 @@ import {
   type ColumnDef,
 } from '@tanstack/react-table'
 import type { Berry } from '@/lib/types'
+import { berryStocksToCSV, csvToBerryStocks } from '@/lib/csv'
 
 interface BerryStockTableProps {
   filteredBerries: Berry[]
@@ -28,6 +29,30 @@ export function BerryStockTable({
   searchText,
   onSearchTextChange,
 }: BerryStockTableProps) {
+  // CSV state
+  const [csvText, setCsvText] = useState('')
+
+  // Handle CSV export
+  const handleExport = () => {
+    setCsvText(berryStocksToCSV(berryStocks))
+  }
+
+  // Handle CSV import
+  const handleImport = () => {
+    const importedStocks = csvToBerryStocks(csvText)
+
+    // Reset all stocks to 0 first
+    const allBerryIds = Object.keys(berryStocks)
+    for (const berryId of allBerryIds) {
+      onStockChange(berryId, 0)
+    }
+
+    // Update all berry stocks based on imported CSV
+    for (const [berryId, count] of Object.entries(importedStocks)) {
+      onStockChange(berryId, count)
+    }
+  }
+
   // Define columns for react-table
   const columns = useMemo<ColumnDef<Berry>[]>(
     () => [
@@ -195,6 +220,44 @@ export function BerryStockTable({
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* CSV Import/Export */}
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <label htmlFor="csv-input" className="block font-medium">
+            CSV形式でインポート/エクスポート
+          </label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors text-sm"
+              title="現在のテーブルの状態をCSVに出力"
+            >
+              エクスポート
+            </button>
+            <button
+              type="button"
+              onClick={handleImport}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors text-sm"
+              title="CSVの内容をテーブルに反映"
+            >
+              インポート
+            </button>
+          </div>
+        </div>
+        <p className="text-sm text-gray-600">
+          形式: <code className="bg-gray-100 px-1 rounded">berryId,count</code>
+        </p>
+        <textarea
+          id="csv-input"
+          value={csvText}
+          onChange={(e) => setCsvText(e.target.value)}
+          className="w-full border rounded px-3 py-2 font-mono text-sm min-h-[150px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="berryId,count&#10;oran-berry,10&#10;pecha-berry,5"
+          aria-label="CSV形式でのきのみ在庫データ"
+        />
       </div>
     </section>
   )
