@@ -8,7 +8,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/pokemon-za-donut/',
+  base: '/pokemon-za-donut',
   plugins: [
     devtools(),
     tanstackRouter({

@@ -1,8 +1,19 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
+import { usePersistedState } from './usePersistedState'
+import { serializeSet, deserializeSet } from '@/lib/serialization'
 
-export function useDonutSelection() {
-  const [selectedDonuts, setSelectedDonuts] = useState<Set<string>>(new Set())
-  const [slots, setSlots] = useState<number>(8)
+export function useDonutSelection(initialSlots = 8) {
+  const [selectedDonuts, setSelectedDonuts] = usePersistedState<Set<string>>(
+    'pokemon-za-selected-donuts',
+    new Set(),
+    serializeSet,
+    deserializeSet
+  )
+
+  const [slots, setSlots] = usePersistedState<number>(
+    'pokemon-za-slots',
+    initialSlots
+  )
 
   const handleDonutToggle = useCallback((donutId: string) => {
     setSelectedDonuts(prev => {
@@ -14,7 +25,7 @@ export function useDonutSelection() {
       }
       return next
     })
-  }, [])
+  }, [setSelectedDonuts])
 
   return {
     selectedDonuts,
