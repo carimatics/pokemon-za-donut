@@ -19,32 +19,65 @@ export type RecipeRow = {
 
 export function useRecipeFinder() {
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
+  const [isSearching, setIsSearching] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleFindRecipes = useCallback((
+  const handleFindRecipes = useCallback(async (
     selectedDonuts: Set<string>,
     berryStocks: Record<string, number>,
     slots: number
   ) => {
-    const newRecipes = new Map<string, DonutRecipe[]>()
+    setIsSearching(true)
+    setError(null)
 
-    // Build berry stocks array
-    const stocks: BerryStock[] = berries
-      .filter(berry => (berryStocks[berry.id] || 0) > 0)
-      .map(berry => ({
-        berry,
-        count: berryStocks[berry.id] || 0
-      }))
+    try {
+      // Simulate async operation to keep UI responsive during heavy computation
+      const newRecipes = await new Promise<Map<string, DonutRecipe[]>>((resolve, reject) => {
+        setTimeout(() => {
+          try {
+            const recipesMap = new Map<string, DonutRecipe[]>()
 
-    // Find recipes for each selected donut
-    selectedDonuts.forEach(donutId => {
-      const donut = donuts.find(d => d.id === donutId)
-      if (donut) {
-        const donutRecipes = findRequiredCombinations(donut, stocks, slots)
-        newRecipes.set(donutId, donutRecipes)
-      }
-    })
+            // Build berry stocks array
+            const stocks: BerryStock[] = berries
+              .filter(berry => (berryStocks[berry.id] || 0) > 0)
+              .map(berry => ({
+                berry,
+                count: berryStocks[berry.id] || 0
+              }))
 
-    setRecipes(newRecipes)
+            // Validate inputs
+            if (stocks.length === 0) {
+              throw new Error('きのみが選択されていません。きのみ個数入力タブで在庫を入力してください。')
+            }
+
+            if (selectedDonuts.size === 0) {
+              throw new Error('ドーナツが選択されていません。')
+            }
+
+            // Find recipes for each selected donut
+            selectedDonuts.forEach(donutId => {
+              const donut = donuts.find(d => d.id === donutId)
+              if (donut) {
+                const donutRecipes = findRequiredCombinations(donut, stocks, slots)
+                recipesMap.set(donutId, donutRecipes)
+              }
+            })
+
+            resolve(recipesMap)
+          } catch (err) {
+            reject(err)
+          }
+        }, 0)
+      })
+
+      setRecipes(newRecipes)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'レシピの検索中にエラーが発生しました'
+      setError(errorMessage)
+      throw new Error(errorMessage)
+    } finally {
+      setIsSearching(false)
+    }
   }, [])
 
   // Flatten recipes for table display
@@ -99,5 +132,8 @@ export function useRecipeFinder() {
     recipes,
     recipeRows,
     handleFindRecipes,
+    isSearching,
+    error,
+    clearError: () => setError(null),
   }
 }

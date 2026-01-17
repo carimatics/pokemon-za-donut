@@ -9,6 +9,7 @@ import { DonutSelectionTable } from '@/components/DonutSelectionTable'
 import { BerryStockTable } from '@/components/BerryStockTable'
 import { RecipeResultsTable } from '@/components/RecipeResultsTable'
 import { FloatingActionButton } from '@/components/FloatingActionButton'
+import { Toast } from '@/components/Toast'
 
 export const Route = createFileRoute('/pokemon-za-donut/')({
   component: App,
@@ -43,12 +44,20 @@ function App() {
   const {
     recipeRows,
     handleFindRecipes,
+    isSearching,
+    error,
+    clearError,
   } = useRecipeFinder()
 
-  // Handle find recipes with tab navigation
-  const onFindRecipes = () => {
-    handleFindRecipes(selectedDonuts, berryStocks, slots)
-    setActiveTab('results')
+  // Handle find recipes with tab navigation and error handling
+  const onFindRecipes = async () => {
+    try {
+      await handleFindRecipes(selectedDonuts, berryStocks, slots)
+      setActiveTab('results')
+    } catch (err) {
+      // Error is already set by useRecipeFinder
+      // Toast will display the error
+    }
   }
 
   return (
@@ -88,8 +97,18 @@ function App() {
       {/* Floating Action Button */}
       <FloatingActionButton
         disabled={selectedDonuts.size === 0}
+        isLoading={isSearching}
         onClick={onFindRecipes}
       />
+
+      {/* Error Toast */}
+      {error && (
+        <Toast
+          message={error}
+          variant="error"
+          onClose={clearError}
+        />
+      )}
     </div>
   )
 }
