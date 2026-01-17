@@ -102,7 +102,7 @@ function App() {
       },
       {
         id: 'stock',
-        header: 'Stock',
+        header: '個数',
         cell: info => {
           const berry = info.row.original
           return (
