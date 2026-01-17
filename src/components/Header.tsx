@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 
 import { useState } from 'react'
-import { Home, Menu, Table, X } from 'lucide-react'
+import { Home, Menu, X } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -59,6 +59,7 @@ export default function Header() {
 
           {/* Demo Links Start */}
 
+          {/*
           <Link
             to="/pokemon-za-donut/demo/table"
             onClick={() => setIsOpen(false)}
@@ -71,6 +72,7 @@ export default function Header() {
             <Table size={20} />
             <span className="font-medium">TanStack Table</span>
           </Link>
+          */}
 
           {/* Demo Links End */}
         </nav>

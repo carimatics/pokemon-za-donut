@@ -10,43 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PokemonZaDonutIndexRouteImport } from './routes/pokemon-za-donut/index'
-import { Route as PokemonZaDonutDemoTableRouteImport } from './routes/pokemon-za-donut/demo/table'
 
 const PokemonZaDonutIndexRoute = PokemonZaDonutIndexRouteImport.update({
   id: '/pokemon-za-donut/',
   path: '/pokemon-za-donut/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PokemonZaDonutDemoTableRoute = PokemonZaDonutDemoTableRouteImport.update({
-  id: '/pokemon-za-donut/demo/table',
-  path: '/pokemon-za-donut/demo/table',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/pokemon-za-donut': typeof PokemonZaDonutIndexRoute
-  '/pokemon-za-donut/demo/table': typeof PokemonZaDonutDemoTableRoute
 }
 export interface FileRoutesByTo {
   '/pokemon-za-donut': typeof PokemonZaDonutIndexRoute
-  '/pokemon-za-donut/demo/table': typeof PokemonZaDonutDemoTableRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/pokemon-za-donut/': typeof PokemonZaDonutIndexRoute
-  '/pokemon-za-donut/demo/table': typeof PokemonZaDonutDemoTableRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/pokemon-za-donut' | '/pokemon-za-donut/demo/table'
+  fullPaths: '/pokemon-za-donut'
   fileRoutesByTo: FileRoutesByTo
-  to: '/pokemon-za-donut' | '/pokemon-za-donut/demo/table'
-  id: '__root__' | '/pokemon-za-donut/' | '/pokemon-za-donut/demo/table'
+  to: '/pokemon-za-donut'
+  id: '__root__' | '/pokemon-za-donut/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   PokemonZaDonutIndexRoute: typeof PokemonZaDonutIndexRoute
-  PokemonZaDonutDemoTableRoute: typeof PokemonZaDonutDemoTableRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,19 +48,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PokemonZaDonutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pokemon-za-donut/demo/table': {
-      id: '/pokemon-za-donut/demo/table'
-      path: '/pokemon-za-donut/demo/table'
-      fullPath: '/pokemon-za-donut/demo/table'
-      preLoaderRoute: typeof PokemonZaDonutDemoTableRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   PokemonZaDonutIndexRoute: PokemonZaDonutIndexRoute,
-  PokemonZaDonutDemoTableRoute: PokemonZaDonutDemoTableRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
