@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -7,13 +7,9 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import type { RecipeRow } from '@/lib/types'
 import { recipeRowsToCSV, downloadCSV } from '@/lib/csv'
 import { useIsMobile } from '@/hooks/useMediaQuery'
-
-// Enable virtualization for tables with more than this many rows
-const VIRTUALIZATION_THRESHOLD = 100
 
 interface RecipeResultsTableProps {
   recipeRows: RecipeRow[]
@@ -123,17 +119,6 @@ export function RecipeResultsTable({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  })
-
-  // Setup virtualization for large result sets
-  const tableContainerRef = useRef<HTMLDivElement>(null)
-  const shouldVirtualize = recipeRows.length > VIRTUALIZATION_THRESHOLD
-
-  const rowVirtualizer = useVirtualizer({
-    count: shouldVirtualize ? table.getRowModel().rows.length : 0,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 50, // Estimated row height
-    overscan: 10,
   })
 
   return (
@@ -255,74 +240,6 @@ export function RecipeResultsTable({
               )}
             </div>
           ))}
-        </div>
-      ) : shouldVirtualize ? (
-        // Virtualized rendering for large datasets (>100 rows)
-        <div
-          ref={tableContainerRef}
-          className="overflow-auto border rounded"
-          style={{ maxHeight: '600px' }}
-        >
-          <table className="min-w-full divide-y divide-gray-200">
-            <caption className="sr-only">レシピ検索結果テーブル（仮想化）</caption>
-            <thead className="bg-gray-50 sticky top-0 z-10">
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th
-                      key={header.id}
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      <div className="flex items-center gap-1">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                        {{
-                          asc: ' ↑',
-                          desc: ' ↓',
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="bg-white">
-              <tr style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-                <td colSpan={columns.length} style={{ padding: 0 }}>
-                  <div style={{ position: 'relative' }}>
-                    {rowVirtualizer.getVirtualItems().map(virtualRow => {
-                      const row = table.getRowModel().rows[virtualRow.index]
-                      return (
-                        <div
-                          key={row.id}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                          }}
-                          className="flex hover:bg-gray-50 border-b border-gray-200"
-                        >
-                          {row.getVisibleCells().map(cell => (
-                            <div key={cell.id} className="px-4 py-3 text-sm flex-1">
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       ) : (
         // Normal rendering for small datasets (<= 100 rows)
