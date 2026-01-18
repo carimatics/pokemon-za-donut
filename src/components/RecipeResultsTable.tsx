@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -6,13 +6,10 @@ import {
   getSortedRowModel,
   type ColumnDef,
   type SortingState,
-  type CellContext,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { RecipeRow } from '@/lib/types'
 import { recipeRowsToCSV, downloadCSV } from '@/lib/csv'
-import { shareRecipe } from '@/lib/share'
-import { Toast } from './Toast'
 
 // Enable virtualization for tables with more than this many rows
 const VIRTUALIZATION_THRESHOLD = 100
@@ -31,17 +28,6 @@ export function RecipeResultsTable({
   searchConditions,
 }: RecipeResultsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [shareMessage, setShareMessage] = useState<string | null>(null)
-
-  // Handle recipe sharing
-  const handleShareRecipe = useCallback(async (recipe: RecipeRow) => {
-    const success = await shareRecipe(recipe)
-    if (success) {
-      setShareMessage('レシピをクリップボードにコピーしました')
-    } else {
-      setShareMessage('クリップボードへのコピーに失敗しました')
-    }
-  }, [])
 
   // Handle CSV download
   const handleDownloadCSV = () => {
@@ -103,34 +89,8 @@ export function RecipeResultsTable({
         header: 'Fresh',
         cell: info => info.getValue(),
       },
-      {
-        id: 'share',
-        header: '共有',
-        cell: (info: CellContext<RecipeRow, unknown>) => {
-          const recipe = info.row.original
-          return (
-            <button
-              type="button"
-              onClick={() => handleShareRecipe(recipe)}
-              className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-transform"
-              aria-label="レシピを共有"
-              title="レシピをクリップボードにコピー"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-              </svg>
-            </button>
-          )
-        },
-      },
     ],
-    [handleShareRecipe]
+    []
   )
 
   // Create recipe table instance with sorting
@@ -326,15 +286,6 @@ export function RecipeResultsTable({
             </tbody>
           </table>
         </div>
-      )}
-
-      {/* Share Toast */}
-      {shareMessage && (
-        <Toast
-          message={shareMessage}
-          variant="info"
-          onClose={() => setShareMessage(null)}
-        />
       )}
     </section>
   )
