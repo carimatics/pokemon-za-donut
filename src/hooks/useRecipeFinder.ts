@@ -38,11 +38,11 @@ export function useRecipeFinder() {
 
             // Validate inputs
             if (stocks.length === 0) {
-              throw new Error('きのみが選択されていません。きのみ個数入力タブで在庫を入力してください。')
+              throw new Error('きのみが選択されていません。\n\n解決方法：\n• 「きのみ個数入力」タブで所持しているきのみの個数を1以上に設定してください')
             }
 
             if (selectedDonuts.size === 0) {
-              throw new Error('ドーナツが選択されていません。')
+              throw new Error('ドーナツが選択されていません。\n\n解決方法：\n• 「ドーナツ選択」タブで作りたいドーナツをチェックしてください')
             }
 
             // Find recipes for each selected donut

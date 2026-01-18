@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-table'
 import { donuts } from '@/data/donuts'
 import type { Donut } from '@/lib/types'
+import { GuideCard } from './GuideCard'
 
 interface DonutSelectionTableProps {
   selectedDonuts: Set<string>
@@ -104,6 +105,18 @@ export function DonutSelectionTable({
           />
         </div>
       </div>
+
+      {/* User Guide for empty state */}
+      {selectedDonuts.size === 0 && (
+        <GuideCard
+          title="使い方"
+          steps={[
+            '作りたいドーナツをチェックボックスで選択してください',
+            '「きのみ個数入力」タブで所持しているきのみの個数を入力',
+            '右下の検索ボタンをクリックしてレシピを検索',
+          ]}
+        />
+      )}
 
       {/* Donut Table */}
       <div className="overflow-x-auto border rounded">

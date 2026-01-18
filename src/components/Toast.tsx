@@ -66,7 +66,7 @@ export function Toast({ message, variant = 'error', onClose, duration = 5000 }: 
       aria-live="assertive"
     >
       <div className="flex-shrink-0">{variantIcons[variant]}</div>
-      <p className="flex-1 text-sm">{message}</p>
+      <div className="flex-1 text-sm whitespace-pre-line">{message}</div>
       <button
         type="button"
         onClick={onClose}
