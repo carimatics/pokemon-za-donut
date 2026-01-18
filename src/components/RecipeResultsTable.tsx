@@ -209,11 +209,11 @@ export function RecipeResultsTable({
                   <p className="text-gray-600">Sour</p>
                   <p className="font-medium">{recipe.sour}</p>
                 </div>
-                <div className="text-center p-2 bg-green-50 rounded">
+                <div className="text-center p-2 bg-blue-50 rounded">
                   <p className="text-gray-600">Bitter</p>
                   <p className="font-medium">{recipe.bitter}</p>
                 </div>
-                <div className="text-center p-2 bg-blue-50 rounded">
+                <div className="text-center p-2 bg-green-50 rounded">
                   <p className="text-gray-600">Fresh</p>
                   <p className="font-medium">{recipe.fresh}</p>
                 </div>
