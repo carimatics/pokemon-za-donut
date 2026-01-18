@@ -21,23 +21,25 @@ export function findRequiredCombinations(
       return;
     }
 
-    // If no remaining slots, check if current flavors meet requirements
-    if (remaining === 0) {
-      if (meetsRequirements(current, required.flavors)) {
-        const recipeStocks: BerryStock[] = [];
-        for (let i = 0; i < stocks.length; i++) {
-          if (counts[i] > 0) {
-            recipeStocks.push({
-              berry: stocks[i].berry,
-              count: counts[i],
-            });
-          }
+    // Check if current flavors meet requirements
+    if (meetsRequirements(current, required.flavors)) {
+      const recipeStocks: BerryStock[] = [];
+      for (let i = 0; i < stocks.length; i++) {
+        if (counts[i] > 0) {
+          recipeStocks.push({
+            berry: stocks[i].berry,
+            count: counts[i],
+          });
         }
-        solutions.push({
-          donut: required,
-          stocks: recipeStocks,
-        });
       }
+      solutions.push({
+        donut: required,
+        stocks: recipeStocks,
+      });
+    }
+
+    // If no remaining slots, return
+    if (remaining === 0) {
       return;
     }
 
