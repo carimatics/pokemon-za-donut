@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 
 import { useState } from 'react'
-import { Github, Home, Menu, X } from 'lucide-react'
+import { Github, Menu, Search, X } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -55,7 +55,7 @@ export default function Header() {
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
             }}
           >
-            <Home size={20} />
+            <Search size={20} />
             <span className="font-medium">Finder</span>
           </Link>
 
@@ -69,25 +69,6 @@ export default function Header() {
             <Github size={20} />
             <span className="font-medium">Repository</span>
           </a>
-
-          {/* Demo Links Start */}
-
-          {/*
-          <Link
-            to="/pokemon-za-donut/demo/table"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Table size={20} />
-            <span className="font-medium">TanStack Table</span>
-          </Link>
-          */}
-
-          {/* Demo Links End */}
         </nav>
       </aside>
     </>
