@@ -104,8 +104,17 @@ describe('BerryStockTable', () => {
 
     render(<BerryStockTable {...defaultProps} />)
 
+    // Click the reset button to open modal
     const resetButton = screen.getByText('すべてリセット')
     await user.click(resetButton)
+
+    // Verify modal is displayed
+    expect(screen.getByText('確認')).toBeInTheDocument()
+    expect(screen.getByText(/すべてのきのみ個数を0にリセットします/)).toBeInTheDocument()
+
+    // Click the confirm button in the modal
+    const confirmButton = screen.getByRole('button', { name: 'リセット' })
+    await user.click(confirmButton)
 
     expect(mockOnResetStocks).toHaveBeenCalled()
   })

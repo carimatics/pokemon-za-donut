@@ -41,6 +41,9 @@ export function BerryStockTable({
   // CSV state
   const [csvText, setCsvText] = useState('')
 
+  // Reset confirmation modal state
+  const [showResetModal, setShowResetModal] = useState(false)
+
   // Local search input state for IME support
   const [localSearchText, setLocalSearchText] = useState(searchText)
 
@@ -68,6 +71,12 @@ export function BerryStockTable({
     for (const [berryId, count] of Object.entries(importedStocks)) {
       onStockChange(berryId, count)
     }
+  }
+
+  // Handle reset confirmation
+  const handleConfirmReset = () => {
+    onResetStocks()
+    setShowResetModal(false)
   }
 
   // Define columns for react-table
@@ -201,7 +210,7 @@ export function BerryStockTable({
         <h2 className="text-2xl font-semibold">きのみ個数入力</h2>
         <button
           type="button"
-          onClick={onResetStocks}
+          onClick={() => setShowResetModal(true)}
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
         >
           すべてリセット
@@ -413,6 +422,44 @@ export function BerryStockTable({
           aria-label="CSV形式でのきのみ在庫データ"
         />
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetModal && (
+        // biome-ignore lint/a11y/useKeyWithClickEvents: Modal backdrop click is intentional
+        // biome-ignore lint/a11y/noStaticElementInteractions: Modal backdrop interaction
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShowResetModal(false)}
+        >
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content click prevention */}
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal content interaction */}
+          <div
+            className="bg-white rounded-lg p-6 max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold mb-4">確認</h3>
+            <p className="text-gray-700 mb-6">
+              すべてのきのみ個数を0にリセットします。この操作は取り消せません。よろしいですか？
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReset}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              >
+                リセット
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
