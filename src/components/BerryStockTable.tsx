@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -32,6 +32,14 @@ export function BerryStockTable({
 }: BerryStockTableProps) {
   // CSV state
   const [csvText, setCsvText] = useState('')
+
+  // Local search input state for IME support
+  const [localSearchText, setLocalSearchText] = useState(searchText)
+
+  // Sync local state with prop when it changes externally (e.g., from URL)
+  useEffect(() => {
+    setLocalSearchText(searchText)
+  }, [searchText])
 
   // Handle CSV export
   const handleExport = () => {
@@ -176,8 +184,12 @@ export function BerryStockTable({
           <input
             id="search-input"
             type="text"
-            value={searchText}
-            onChange={(e) => onSearchTextChange(e.target.value)}
+            value={localSearchText}
+            onChange={(e) => {
+              const newValue = e.target.value
+              setLocalSearchText(newValue)
+              onSearchTextChange(newValue)
+            }}
             placeholder="Search by name or ID..."
             className="border rounded px-3 py-1 flex-1 max-w-md"
           />
