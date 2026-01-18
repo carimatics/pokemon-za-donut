@@ -11,6 +11,13 @@ interface UseBerryFilterProps {
   setSearchText: (text: string) => void
 }
 
+function katakanaToHiragana(str: string): string {
+  return str.replace(/[\u30A1-\u30F6]/g, match => {
+    const code = match.charCodeAt(0) - 0x60
+    return String.fromCharCode(code)
+  })
+}
+
 export function useBerryFilter({
   hyperFilter,
   searchText,
@@ -29,8 +36,8 @@ export function useBerryFilter({
 
       // Search filter with debounced value
       if (debouncedSearchText) {
-        const search = debouncedSearchText.toLowerCase()
-        return berry.name.toLowerCase().includes(search) ||
+        const search = katakanaToHiragana(debouncedSearchText.toLowerCase())
+        return katakanaToHiragana(berry.name.toLowerCase()).includes(search) ||
                berry.id.toLowerCase().includes(search)
       }
 
