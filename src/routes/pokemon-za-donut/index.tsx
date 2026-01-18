@@ -125,8 +125,6 @@ function App() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Pokémon LEGENDS ZA Donut Recipe Finder</h1>
-
       {/* Tab Navigation */}
       <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 

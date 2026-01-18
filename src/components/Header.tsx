@@ -19,11 +19,7 @@ export default function Header() {
         </button>
         <h1 className="ml-4 text-xl font-semibold">
           <Link to="/pokemon-za-donut">
-            <img
-              src="/pokemon-za-donut/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              className="h-10"
-            />
+            Pokémon LEGENDS ZA Donut Recipe Finder
           </Link>
         </h1>
       </header>
