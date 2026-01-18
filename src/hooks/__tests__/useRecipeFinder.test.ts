@@ -27,6 +27,14 @@ vi.mock('@/data/berries', () => ({
       flavors: { sweet: 0, spicy: 10, sour: 0, bitter: 0, fresh: 0 },
       hyper: false,
     },
+    {
+      id: 'high-flavor-berry',
+      name: 'ハイフレーバーベリー',
+      level: 10,
+      calories: 100,
+      flavors: { sweet: 30, spicy: 30, sour: 30, bitter: 30, fresh: 0 },
+      hyper: false,
+    },
   ],
 }))
 
@@ -222,6 +230,46 @@ describe('useRecipeFinder', () => {
     expect(row.totalLevel).toBe(8) // (1*5) + (1*3) = 8
     expect(row.sweet).toBe(50) // 10*5 = 50
     expect(row.spicy).toBe(30) // 10*3 = 30
+    // Total flavor sum = 80, which is < 120, so 0 stars
+    expect(row.stars).toBe(0)
+    expect(row.plusLevel).toBe(8) // No boost with 0 stars
+    expect(row.energyBoost).toBe(160) // No boost with 0 stars
+  })
+
+  it('should calculate stars correctly based on flavor sum', async () => {
+    // Test 1 star (flavor sum = 120)
+    // berries[2]: ハイフレーバーベリー with level=10, calories=100, flavors sum=120
+    const mockRecipe1Star: DonutRecipe = {
+      donut: {
+        id: 'plain-donut',
+        name: 'プレーンドーナツ',
+        flavors: { sweet: 100, spicy: 0, sour: 0, bitter: 0, fresh: 0 },
+      },
+      stocks: [
+        {
+          berry: berries[2], // ハイフレーバーベリー
+          count: 1,
+        },
+      ],
+    }
+
+    mockFindRequiredCombinations.mockReturnValue({
+      recipes: [mockRecipe1Star],
+      limitReached: false,
+    })
+
+    const { result } = renderHook(() => useRecipeFinder())
+
+    await result.current.handleFindRecipes(new Set(['plain-donut']), { 'high-flavor-berry': 10 }, 3)
+
+    await waitFor(() => {
+      expect(result.current.recipeRows.length).toBe(1)
+    })
+
+    const row = result.current.recipeRows[0]
+    expect(row.stars).toBe(1)
+    expect(row.plusLevel).toBe(11) // 10 * 1.1 = 11
+    expect(row.energyBoost).toBe(110) // 100 * 1.1 = 110
   })
 
   it('should clear error when clearError is called', async () => {

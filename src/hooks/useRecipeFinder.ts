@@ -115,6 +115,24 @@ export function useRecipeFinder() {
           .map(stock => `${stock.berry.name} x${stock.count}`)
           .join(', ')
 
+        // Calculate total flavor sum
+        const totalFlavorSum = totalFlavors.sweet + totalFlavors.spicy + totalFlavors.sour + totalFlavors.bitter + totalFlavors.fresh
+
+        // Calculate stars based on total flavor sum
+        let stars = 0
+        if (totalFlavorSum >= 960) stars = 5
+        else if (totalFlavorSum >= 700) stars = 4
+        else if (totalFlavorSum >= 350) stars = 3
+        else if (totalFlavorSum >= 240) stars = 2
+        else if (totalFlavorSum >= 120) stars = 1
+
+        // Calculate boost multiplier (1 + 0.1 * stars)
+        const boostMultiplier = 1 + 0.1 * stars
+
+        // Calculate plus level and energy boost
+        const plusLevel = Math.floor(totalLevel * boostMultiplier)
+        const energyBoost = Math.floor(totalCalories * boostMultiplier)
+
         rows.push({
           donutName: donut.name,
           recipeIndex: index + 1,
@@ -126,6 +144,9 @@ export function useRecipeFinder() {
           sour: totalFlavors.sour,
           bitter: totalFlavors.bitter,
           fresh: totalFlavors.fresh,
+          stars,
+          plusLevel,
+          energyBoost,
         })
       })
     })

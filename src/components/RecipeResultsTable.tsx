@@ -91,6 +91,24 @@ export function RecipeResultsTable({
         header: 'Fresh',
         cell: info => info.getValue(),
       },
+      {
+        accessorKey: 'stars',
+        header: '星',
+        cell: info => {
+          const stars = info.getValue() as number
+          return stars > 0 ? '★'.repeat(stars) : '-'
+        },
+      },
+      {
+        accessorKey: 'plusLevel',
+        header: 'プラスレベル',
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: 'energyBoost',
+        header: 'ハラモチエネルギー',
+        cell: info => info.getValue(),
+      },
     ],
     []
   )
@@ -186,6 +204,9 @@ export function RecipeResultsTable({
                 <div>
                   <h3 className="font-medium text-gray-900">{recipe.donutName}</h3>
                   <p className="text-sm text-gray-500">レシピ #{recipe.recipeIndex}</p>
+                  {recipe.stars > 0 && (
+                    <p className="text-yellow-500 text-lg mt-1">{'★'.repeat(recipe.stars)}</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-blue-600">{recipe.totalCalories}cal</p>
@@ -218,6 +239,18 @@ export function RecipeResultsTable({
                   <p className="font-medium">{recipe.fresh}</p>
                 </div>
               </div>
+              {recipe.stars > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-2 text-xs">
+                  <div className="text-center p-2 bg-purple-50 rounded">
+                    <p className="text-gray-600">プラスレベル</p>
+                    <p className="font-medium text-purple-700">{recipe.plusLevel}</p>
+                  </div>
+                  <div className="text-center p-2 bg-orange-50 rounded">
+                    <p className="text-gray-600">ハラモチ</p>
+                    <p className="font-medium text-orange-700">{recipe.energyBoost}</p>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

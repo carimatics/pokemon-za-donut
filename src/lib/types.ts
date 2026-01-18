@@ -42,4 +42,7 @@ export interface RecipeRow {
   sour: number;
   bitter: number;
   fresh: number;
+  stars: number;
+  plusLevel: number;
+  energyBoost: number;
 }
