@@ -31,7 +31,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
 
   return (
     <div className="border-b border-gray-200 mb-6">
-      <nav className="flex gap-4" role="tablist">
+      <div className="flex gap-4" role="tablist">
         {tabs.map(tab => (
           <button
             key={tab.value}
@@ -52,7 +52,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
             {tab.label}
           </button>
         ))}
-      </nav>
+      </div>
     </div>
   )
 }

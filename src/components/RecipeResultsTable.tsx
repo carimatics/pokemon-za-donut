@@ -117,6 +117,7 @@ export function RecipeResultsTable({
   })
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: single instance per route
     <section
       className="space-y-4"
       role="tabpanel"

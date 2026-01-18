@@ -12,6 +12,7 @@ import { BerryStockTable } from '@/components/BerryStockTable'
 import { RecipeResultsTable } from '@/components/RecipeResultsTable'
 import { FloatingActionButton } from '@/components/FloatingActionButton'
 import { Toast } from '@/components/Toast'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Search params schema for URL state management
 const searchSchema = z.object({
@@ -24,6 +25,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/pokemon-za-donut/')({
   component: App,
   validateSearch: searchSchema,
+  errorComponent: ErrorBoundary,
 })
 
 function App() {
@@ -36,16 +38,16 @@ function App() {
   // Memoized URL update callbacks for filter
   const handleHyperFilterChange = useCallback(
     (filter: 'all' | 'true' | 'false') => {
-      navigate({ search: { ...search, hyperFilter: filter } })
+      navigate({ search: (prev) => ({ ...prev, hyperFilter: filter }) })
     },
-    [navigate, search]
+    [navigate]
   )
 
   const handleSearchTextChange = useCallback(
     (text: string) => {
-      navigate({ search: { ...search, search: text } })
+      navigate({ search: (prev) => ({ ...prev, search: text }) })
     },
-    [navigate, search]
+    [navigate]
   )
 
   // Custom hooks
@@ -86,20 +88,23 @@ function App() {
   } = useRecipeFinder()
 
   // Handle tab change with URL sync
-  const handleTabChange = (tab: 'donuts' | 'berries' | 'results') => {
-    navigate({ search: { ...search, tab } })
-  }
+  const handleTabChange = useCallback(
+    (tab: 'donuts' | 'berries' | 'results') => {
+      navigate({ search: (prev) => ({ ...prev, tab }) })
+    },
+    [navigate]
+  )
 
   // Handle find recipes with tab navigation and error handling
-  const onFindRecipes = async () => {
+  const onFindRecipes = useCallback(async () => {
     try {
       await handleFindRecipes(selectedDonuts, berryStocks, slots)
-      navigate({ search: { ...search, tab: 'results' } })
+      navigate({ search: (prev) => ({ ...prev, tab: 'results' }) })
     } catch {
       // Error is already set by useRecipeFinder
       // Toast will display the error
     }
-  }
+  }, [handleFindRecipes, selectedDonuts, berryStocks, slots, navigate])
 
   // Compute search conditions for results display
   const searchConditions = useMemo(() => {

@@ -142,6 +142,7 @@ export function BerryStockTable({
   })
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: single instance per route
     <section
       className="space-y-4"
       role="tabpanel"
@@ -165,6 +166,7 @@ export function BerryStockTable({
           <label className="font-medium" htmlFor="hyper-filter">
             きのみ種別:
           </label>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
           <select
             id="hyper-filter"
             value={hyperFilter}
@@ -181,6 +183,7 @@ export function BerryStockTable({
           <label className="font-medium" htmlFor="search-input">
             Search:
           </label>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
           <input
             id="search-input"
             type="text"
@@ -261,6 +264,7 @@ export function BerryStockTable({
         <p className="text-sm text-gray-600">
           形式: <code className="bg-gray-100 px-1 rounded">berryId,count</code>
         </p>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
         <textarea
           id="csv-input"
           value={csvText}

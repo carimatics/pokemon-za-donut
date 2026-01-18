@@ -21,7 +21,7 @@ export function GuideCard({ title, steps, variant = 'info' }: GuideCardProps) {
   }
 
   return (
-    <div className={`${variantStyles[variant]} border rounded-lg p-4 mb-4`} role="complementary">
+    <aside className={`${variantStyles[variant]} border rounded-lg p-4 mb-4`}>
       <h3 className={`font-semibold ${titleColor[variant]} mb-2 flex items-center gap-2`}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -40,10 +40,10 @@ export function GuideCard({ title, steps, variant = 'info' }: GuideCardProps) {
         {title}
       </h3>
       <ol className={`list-decimal list-inside space-y-1 ${textColor[variant]}`}>
-        {steps.map((step, index) => (
-          <li key={index}>{step}</li>
+        {steps.map((step) => (
+          <li key={step}>{step}</li>
         ))}
       </ol>
-    </div>
+    </aside>
   )
 }

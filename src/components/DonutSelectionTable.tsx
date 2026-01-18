@@ -82,6 +82,7 @@ export function DonutSelectionTable({
   })
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: single instance per route
     <section
       className="space-y-4"
       role="tabpanel"
@@ -94,6 +95,7 @@ export function DonutSelectionTable({
           <label className="font-medium" htmlFor="slots-input">
             利用できるきのみ数:
           </label>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
           <input
             id="slots-input"
             type="number"
