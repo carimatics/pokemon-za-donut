@@ -1,301 +1,167 @@
-Welcome to your new TanStack app! 
+# Pokémon LEGENDS ZA Donut Recipe Finder
 
-# Getting Started
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev/)
 
-To run this application:
+Pokémon LEGENDS Z-A DLC「M次元ラッシュ」のストーリー中に作成するドーナツのレシピを探索するためのファンメイドツールです。
+
+🔗 **Live Demo**: [https://carimatics.github.io/pokemon-za-donut/](https://carimatics.github.io/pokemon-za-donut/)
+
+## 📋 機能
+
+- **ドーナツ選択**: 作りたいドーナツを選択
+- **きのみ在庫管理**: 所持しているきのみの個数を入力
+- **レシピ検索**: 選択したドーナツと在庫きのみから、作成可能なレシピを自動計算
+- **星評価システム**: フレーバー合計値に基づく星評価と、プラスレベル・ハラモチエネルギーのブースト計算
+- **CSV インポート/エクスポート**: きのみ在庫とレシピ結果のCSV入出力に対応
+- **レスポンシブデザイン**: PC・タブレット・スマートフォンに最適化された表示
+- **ソート機能**: テーブルの各列をクリックして昇順/降順にソート
+- **検索・フィルタリング**: きのみ名での検索、異次元きのみフィルタ
+
+## 🚀 Getting Started
+
+### 前提条件
+
+- Node.js 24.x 以上
+- npm
+
+### インストール
 
 ```bash
+# リポジトリをクローン
+git clone https://github.com/carimatics/pokemon-za-donut.git
+cd pokemon-za-donut
+
+# 依存関係をインストール
 npm install
-npm run start
 ```
 
-# Building For Production
+### 開発サーバーの起動
 
-To build this application for production:
+```bash
+npm run dev
+```
+
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてアプリケーションを確認できます。
+
+### プロダクションビルド
 
 ```bash
 npm run build
 ```
 
-## Testing
+ビルド成果物は `dist/` ディレクトリに出力されます。
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
-```bash
-npm run test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
+## 🧪 テスト
 
 ```bash
-npm run lint
-npm run format
-npm run check
+# テストを実行
+npm test
+
+# カバレッジ付きでテストを実行
+npm run test:coverage
 ```
 
+## 🛠️ 利用可能なスクリプト
 
+| コマンド | 説明 |
+|---------|------|
+| `npm run dev` | 開発サーバーを起動 |
+| `npm run build` | プロダクション用にビルド |
+| `npm run preview` | ビルドしたアプリをプレビュー |
+| `npm test` | テストを実行 |
+| `npm run lint` | コードをリント |
+| `npm run format` | コードをフォーマット |
+| `npm run check` | リントとフォーマットをチェック |
 
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+## 🏗️ 技術スタック
 
-### Adding A Route
+- **Framework**: [React 19](https://react.dev/)
+- **Language**: [TypeScript 5.7](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite 7](https://vite.dev/)
+- **Routing**: [TanStack Router v1](https://tanstack.com/router)
+- **Table**: [TanStack Table v8](https://tanstack.com/table)
+- **Virtual Scrolling**: [TanStack Virtual](https://tanstack.com/virtual)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Testing**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
+- **Linting/Formatting**: [Biome](https://biomejs.dev/)
 
-To add a new route to your application just add another a new file in the `./src/routes` directory.
+## 📁 プロジェクト構造
 
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
+```
+src/
+├── components/          # Reactコンポーネント
+│   ├── __tests__/      # コンポーネントのテスト
+│   ├── BerryStockTable.tsx
+│   ├── DonutSelectionTable.tsx
+│   ├── RecipeResultsTable.tsx
+│   └── ...
+├── data/               # ゲームデータ（きのみ、ドーナツ）
+│   ├── berries.ts
+│   └── donuts.ts
+├── hooks/              # カスタムReact Hooks
+│   ├── __tests__/
+│   ├── useRecipeFinder.ts
+│   └── ...
+├── lib/                # ユーティリティ関数
+│   ├── finder.ts       # レシピ検索ロジック
+│   ├── csv.ts          # CSV入出力
+│   └── types.ts        # 型定義
+└── routes/             # ページルート（TanStack Router）
+    └── pokemon-za-donut/
+        └── index.tsx
 ```
 
-Then anywhere in your JSX you can use it like so:
+## 🎮 使い方
 
-```tsx
-<Link to="/about">About</Link>
-```
+1. **ドーナツを選択**: 「ドーナツ選択」タブで作りたいドーナツをチェック
+2. **きのみ在庫を入力**: 「きのみ個数入力」タブで所持しているきのみの個数を入力
+3. **レシピを検索**: 画面右下の浮遊ボタン（モバイル）または「レシピ検索」ボタンをクリック
+4. **結果を確認**: 「レシピ検索結果」タブで作成可能なレシピを確認
 
-This will create a link that will navigate to the `/about` route.
+### 星評価システム
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+フレーバーの合計値に応じて、以下の星評価が付与されます：
 
-### Using A Layout
+| フレーバー合計 | 星 | ブースト倍率 |
+|---------------|---|------------|
+| 120未満 | ☆ | 1.0x |
+| 120以上 | ★ | 1.1x |
+| 240以上 | ★★ | 1.2x |
+| 350以上 | ★★★ | 1.3x |
+| 700以上 | ★★★★ | 1.4x |
+| 960以上 | ★★★★★ | 1.5x |
 
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+星評価に応じて「プラスレベル」と「ハラモチエネルギー」がブーストされます。
 
-Here is an example layout that includes a header:
+## ⚠️ 免責事項
 
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+このサイトは個人が運営するファンメイドツールです。株式会社ポケモン、任天堂株式会社、The Pokémon Company、およびその関連会社とは一切関係ありません。
 
-import { Link } from "@tanstack/react-router";
+このツールは「Pokémon LEGENDS Z-A」のゲーム攻略を支援する目的で作成された非公式のツールです。
 
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
+本ツールの利用によって生じた一切の損害、不利益、トラブル等について、開発者は責任を負いかねます。ご利用は自己責任でお願いいたします。
 
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+## 📄 ライセンス
 
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+このプロジェクトはMITライセンスの下で公開されています。詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
+Pokémon and Pokémon character names are trademarks of Nintendo.
 
-## Data Fetching
+© 2025 Pokémon. © 1995-2025 Nintendo/Creatures Inc./GAME FREAK inc.
 
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+This website is a fan-made tool and is not affiliated with or endorsed by Nintendo, The Pokémon Company, or GAME FREAK.
 
-For example:
+## 🤝 コントリビューション
 
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
+プルリクエストを歓迎します。大きな変更を行う場合は、まずissueを開いて変更内容について議論してください。
 
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+## 🔗 リンク
 
-### React-Query
+- [GitHub Repository](https://github.com/carimatics/pokemon-za-donut)
+- [Live Demo](https://carimatics.github.io/pokemon-za-donut/)
 
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+---
 
-First add your dependencies:
-
-```bash
-npm install @tanstack/react-query @tanstack/react-query-devtools
-```
-
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-npm install @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+Made with ❤️ by [carimatics](https://github.com/carimatics)
