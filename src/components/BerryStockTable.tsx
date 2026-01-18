@@ -75,6 +75,20 @@ export function BerryStockTable({
   const columns = useMemo<ColumnDef<Berry>[]>(
     () => [
       {
+        id: 'stock',
+        header: '個数',
+        cell: info => {
+          const berry = info.row.original
+          return (
+            <BerryStockInput
+              berry={berry}
+              value={berryStocks[berry.id] || 0}
+              onChange={onStockChange}
+            />
+          )
+        },
+      },
+      {
         accessorKey: 'name',
         header: 'Name',
         cell: info => info.getValue(),
@@ -158,20 +172,6 @@ export function BerryStockTable({
         accessorKey: 'hyper',
         header: '異次元',
         cell: info => (info.getValue() ? '✔︎' : ''),
-      },
-      {
-        id: 'stock',
-        header: '個数',
-        cell: info => {
-          const berry = info.row.original
-          return (
-            <BerryStockInput
-              berry={berry}
-              value={berryStocks[berry.id] || 0}
-              onChange={onStockChange}
-            />
-          )
-        },
       },
     ],
     [onStockChange, berryStocks]
