@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useRecipeFinder } from '../useRecipeFinder'
 import type { DonutRecipe } from '@/lib/types'
@@ -94,7 +94,9 @@ describe('useRecipeFinder', () => {
     const berryStocks = { 'oran-berry': 10 }
     const slots = 3
 
-    await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    await act(async () => {
+      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    })
 
     await waitFor(
       () => {
@@ -115,11 +117,13 @@ describe('useRecipeFinder', () => {
     const berryStocks = {} // No berries
     const slots = 3
 
-    try {
-      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
-    } catch {
-      // Expected to throw
-    }
+    await act(async () => {
+      try {
+        await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+      } catch {
+        // Expected to throw
+      }
+    })
 
     await waitFor(() => {
       expect(result.current.isSearching).toBe(false)
@@ -136,11 +140,13 @@ describe('useRecipeFinder', () => {
     const berryStocks = { 'oran-berry': 10 }
     const slots = 3
 
-    try {
-      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
-    } catch {
-      // Expected to throw
-    }
+    await act(async () => {
+      try {
+        await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+      } catch {
+        // Expected to throw
+      }
+    })
 
     await waitFor(() => {
       expect(result.current.isSearching).toBe(false)
@@ -175,7 +181,9 @@ describe('useRecipeFinder', () => {
     const berryStocks = { 'oran-berry': 10 }
     const slots = 3
 
-    await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    await act(async () => {
+      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    })
 
     await waitFor(() => {
       expect(result.current.isSearching).toBe(false)
@@ -216,7 +224,9 @@ describe('useRecipeFinder', () => {
     const berryStocks = { 'oran-berry': 10, 'pecha-berry': 10 }
     const slots = 3
 
-    await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    await act(async () => {
+      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    })
 
     await waitFor(() => {
       expect(result.current.recipeRows.length).toBe(1)
@@ -260,7 +270,9 @@ describe('useRecipeFinder', () => {
 
     const { result } = renderHook(() => useRecipeFinder())
 
-    await result.current.handleFindRecipes(new Set(['plain-donut']), { 'high-flavor-berry': 10 }, 3)
+    await act(async () => {
+      await result.current.handleFindRecipes(new Set(['plain-donut']), { 'high-flavor-berry': 10 }, 3)
+    })
 
     await waitFor(() => {
       expect(result.current.recipeRows.length).toBe(1)
@@ -279,21 +291,24 @@ describe('useRecipeFinder', () => {
     const berryStocks = { 'oran-berry': 10 }
     const slots = 3
 
-    try {
-      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
-    } catch {
-      // Expected to throw
-    }
+    await act(async () => {
+      try {
+        await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+      } catch {
+        // Expected to throw
+      }
+    })
 
     await waitFor(() => {
       expect(result.current.error).not.toBeNull()
     })
 
     // Call clearError using act
-    await waitFor(() => {
+    act(() => {
       result.current.clearError()
-      expect(result.current.error).toBeNull()
     })
+
+    expect(result.current.error).toBeNull()
   })
 
   it('should clear warning when clearWarning is called', async () => {
@@ -322,17 +337,20 @@ describe('useRecipeFinder', () => {
     const berryStocks = { 'oran-berry': 10 }
     const slots = 3
 
-    await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    await act(async () => {
+      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    })
 
     await waitFor(() => {
       expect(result.current.warning).not.toBeNull()
     })
 
     // Call clearWarning using act
-    await waitFor(() => {
+    act(() => {
       result.current.clearWarning()
-      expect(result.current.warning).toBeNull()
     })
+
+    expect(result.current.warning).toBeNull()
   })
 
   it('should set isSearching to false after search completes', async () => {
@@ -364,8 +382,9 @@ describe('useRecipeFinder', () => {
     // Initially not searching
     expect(result.current.isSearching).toBe(false)
 
-    const promise = result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
-    await promise
+    await act(async () => {
+      await result.current.handleFindRecipes(selectedDonuts, berryStocks, slots)
+    })
 
     // Should be done after promise resolves
     await waitFor(() => {
