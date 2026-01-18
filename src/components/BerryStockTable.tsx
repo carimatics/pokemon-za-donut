@@ -131,7 +131,7 @@ export function BerryStockTable({
         },
       },
     ],
-    [onStockChange]
+    [onStockChange, berryStocks]
   )
 
   // Create berry table instance

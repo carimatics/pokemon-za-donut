@@ -11,11 +11,17 @@ interface UseBerryFilterProps {
   setSearchText: (text: string) => void
 }
 
-function katakanaToHiragana(str: string): string {
-  return str.replace(/[\u30A1-\u30F6]/g, match => {
+/**
+ * Normalize text for search: convert katakana to hiragana and lowercase
+ * This allows matching regardless of hiragana/katakana differences
+ */
+function normalizeForSearch(str: string): string {
+  // Convert katakana to hiragana
+  const hiragana = str.replace(/[\u30A1-\u30F6]/g, match => {
     const code = match.charCodeAt(0) - 0x60
     return String.fromCharCode(code)
   })
+  return hiragana.toLowerCase()
 }
 
 export function useBerryFilter({
@@ -36,9 +42,12 @@ export function useBerryFilter({
 
       // Search filter with debounced value
       if (debouncedSearchText) {
-        const search = katakanaToHiragana(debouncedSearchText.toLowerCase())
-        return katakanaToHiragana(berry.name.toLowerCase()).includes(search) ||
-               berry.id.toLowerCase().includes(search)
+        const normalizedSearch = normalizeForSearch(debouncedSearchText)
+        const normalizedName = normalizeForSearch(berry.name)
+        const normalizedId = berry.id.toLowerCase()
+
+        return normalizedName.includes(normalizedSearch) ||
+               normalizedId.includes(normalizedSearch)
       }
 
       return true
