@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { berries } from '@/data/berries'
 import type { Berry } from '@/lib/types'
+import { useDebouncedValue } from './useDebouncedValue'
+import { DEFAULT_VALUES } from '@/lib/constants'
 
 interface UseBerryFilterProps {
   hyperFilter: 'all' | 'true' | 'false'
@@ -15,6 +17,9 @@ export function useBerryFilter({
   setHyperFilter,
   setSearchText,
 }: UseBerryFilterProps) {
+  // Debounce search text to avoid filtering on every keystroke
+  const debouncedSearchText = useDebouncedValue(searchText, DEFAULT_VALUES.DEBOUNCE_DELAY)
+
   const filteredBerries = useMemo<Berry[]>(() => {
     return berries.filter(berry => {
       // Hyper filter
@@ -22,16 +27,16 @@ export function useBerryFilter({
         return false
       }
 
-      // Search filter
-      if (searchText) {
-        const search = searchText.toLowerCase()
+      // Search filter with debounced value
+      if (debouncedSearchText) {
+        const search = debouncedSearchText.toLowerCase()
         return berry.name.toLowerCase().includes(search) ||
                berry.id.toLowerCase().includes(search)
       }
 
       return true
     })
-  }, [hyperFilter, searchText])
+  }, [hyperFilter, debouncedSearchText])
 
   return {
     filteredBerries,

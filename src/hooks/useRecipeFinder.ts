@@ -2,25 +2,14 @@ import { useState, useCallback, useMemo } from 'react'
 import { berries } from '@/data/berries'
 import { donuts } from '@/data/donuts'
 import { findRequiredCombinations } from '@/lib/finder'
-import type { BerryStock, DonutRecipe } from '@/lib/types'
-
-export type RecipeRow = {
-  donutName: string
-  recipeIndex: number
-  berries: string
-  totalCalories: number
-  totalLevel: number
-  sweet: number
-  spicy: number
-  sour: number
-  bitter: number
-  fresh: number
-}
+import type { BerryStock, DonutRecipe, RecipeRow } from '@/lib/types'
+import { DEFAULT_VALUES } from '@/lib/constants'
 
 export function useRecipeFinder() {
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const handleFindRecipes = useCallback(async (
     selectedDonuts: Set<string>,
@@ -29,6 +18,7 @@ export function useRecipeFinder() {
   ) => {
     setIsSearching(true)
     setError(null)
+    setWarning(null)
 
     try {
       // Simulate async operation to keep UI responsive during heavy computation
@@ -36,6 +26,7 @@ export function useRecipeFinder() {
         setTimeout(() => {
           try {
             const recipesMap = new Map<string, DonutRecipe[]>()
+            const limitReachedDonuts: string[] = []
 
             // Build berry stocks array
             const stocks: BerryStock[] = berries
@@ -58,10 +49,23 @@ export function useRecipeFinder() {
             selectedDonuts.forEach(donutId => {
               const donut = donuts.find(d => d.id === donutId)
               if (donut) {
-                const donutRecipes = findRequiredCombinations(donut, stocks, slots)
-                recipesMap.set(donutId, donutRecipes)
+                const result = findRequiredCombinations(donut, stocks, slots)
+                recipesMap.set(donutId, result.recipes)
+
+                // Track if limit was reached for this donut
+                if (result.limitReached) {
+                  limitReachedDonuts.push(donut.name)
+                }
               }
             })
+
+            // Set warning if any donut reached the limit
+            if (limitReachedDonuts.length > 0) {
+              const donutList = limitReachedDonuts.join('、')
+              setWarning(
+                `${donutList} のレシピが非常に多く、最初の${DEFAULT_VALUES.MAX_SOLUTIONS.toLocaleString()}件のみ表示しています。`
+              )
+            }
 
             resolve(recipesMap)
           } catch (err) {
@@ -135,5 +139,7 @@ export function useRecipeFinder() {
     isSearching,
     error,
     clearError: () => setError(null),
+    warning,
+    clearWarning: () => setWarning(null),
   }
 }

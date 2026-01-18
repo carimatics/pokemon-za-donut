@@ -1,4 +1,4 @@
-import type { RecipeRow } from '@/hooks/useRecipeFinder'
+import type { RecipeRow } from '@/lib/types'
 
 /**
  * Convert berry stocks to CSV format

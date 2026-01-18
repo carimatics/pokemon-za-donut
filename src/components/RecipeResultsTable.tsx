@@ -7,7 +7,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table'
-import type { RecipeRow } from '@/hooks/useRecipeFinder'
+import type { RecipeRow } from '@/lib/types'
 import { recipeRowsToCSV, downloadCSV } from '@/lib/csv'
 
 interface RecipeResultsTableProps {

@@ -1,19 +1,27 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { usePersistedState } from './usePersistedState'
 import { serializeSet, deserializeSet } from '@/lib/serialization'
+import { STORAGE_KEYS, DEFAULT_VALUES } from '@/lib/constants'
 
-export function useDonutSelection(initialSlots = 8) {
+export function useDonutSelection(urlSlots?: number) {
   const [selectedDonuts, setSelectedDonuts] = usePersistedState<Set<string>>(
-    'pokemon-za-selected-donuts',
+    STORAGE_KEYS.SELECTED_DONUTS,
     new Set(),
     serializeSet,
     deserializeSet
   )
 
   const [slots, setSlots] = usePersistedState<number>(
-    'pokemon-za-slots',
-    initialSlots
+    STORAGE_KEYS.SLOTS,
+    DEFAULT_VALUES.SLOTS
   )
+
+  // Sync URL params to localStorage when URL changes
+  useEffect(() => {
+    if (urlSlots !== undefined && urlSlots !== slots) {
+      setSlots(urlSlots)
+    }
+  }, [urlSlots, slots, setSlots])
 
   const handleDonutToggle = useCallback((donutId: string) => {
     setSelectedDonuts(prev => {

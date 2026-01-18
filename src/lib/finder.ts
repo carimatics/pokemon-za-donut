@@ -1,17 +1,23 @@
 import type { BerryStock, Donut, DonutRecipe, Flavors } from '@/lib/types.ts';
+import { DEFAULT_VALUES } from '@/lib/constants';
 
-const MAX_SOLUTIONS = 10000;
+export type FindRecipesResult = {
+  recipes: DonutRecipe[]
+  limitReached: boolean
+}
 
 export function findRequiredCombinations(
   required: Donut,
   stocks: BerryStock[],
   slots: number,
-): DonutRecipe[] {
+): FindRecipesResult {
   const solutions: DonutRecipe[] = [];
+  let limitReached = false;
 
   function backtrack(index: number, counts: number[], remaining: number, current: Flavors) {
     // Limit the number of solutions to avoid excessive computation
-    if (solutions.length >= MAX_SOLUTIONS) {
+    if (solutions.length >= DEFAULT_VALUES.MAX_SOLUTIONS) {
+      limitReached = true;
       return;
     }
 
@@ -77,7 +83,10 @@ export function findRequiredCombinations(
   };
 
   backtrack(0, initialCounts, slots, initialCurrent);
-  return solutions;
+  return {
+    recipes: solutions,
+    limitReached,
+  };
 }
 
 function meetsRequirements(current: Flavors, required: Flavors): boolean {

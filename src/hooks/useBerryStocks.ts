@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 import { usePersistedState } from './usePersistedState'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 export function useBerryStocks() {
   const [berryStocks, setBerryStocks, clearBerryStocks] = usePersistedState<Record<string, number>>(
-    'pokemon-za-berry-stocks',
+    STORAGE_KEYS.BERRY_STOCKS,
     {}
   )
 

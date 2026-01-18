@@ -56,7 +56,7 @@ function App() {
     handleDonutToggle,
     slots,
     setSlots,
-  } = useDonutSelection()
+  } = useDonutSelection(search.slots)
 
   const {
     recipeRows,
@@ -64,6 +64,8 @@ function App() {
     isSearching,
     error,
     clearError,
+    warning,
+    clearWarning,
   } = useRecipeFinder()
 
   // Handle tab change with URL sync
@@ -129,6 +131,15 @@ function App() {
           message={error}
           variant="error"
           onClose={clearError}
+        />
+      )}
+
+      {/* Warning Toast */}
+      {warning && (
+        <Toast
+          message={warning}
+          variant="info"
+          onClose={clearWarning}
         />
       )}
     </div>

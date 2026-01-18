@@ -30,3 +30,16 @@ export interface DonutRecipe {
   donut: Donut;
   stocks: BerryStock[];
 }
+
+export interface RecipeRow {
+  donutName: string;
+  recipeIndex: number;
+  berries: string;
+  totalCalories: number;
+  totalLevel: number;
+  sweet: number;
+  spicy: number;
+  sour: number;
+  bitter: number;
+  fresh: number;
+}
