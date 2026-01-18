@@ -21,7 +21,7 @@ export function findRequiredCombinations(
       return;
     }
 
-    // Check if current flavors meet requirements
+    // If current combination meets requirements, record it
     if (meetsRequirements(current, required.flavors)) {
       const recipeStocks: BerryStock[] = [];
       for (let i = 0; i < stocks.length; i++) {
@@ -36,6 +36,7 @@ export function findRequiredCombinations(
         donut: required,
         stocks: recipeStocks,
       });
+      return;
     }
 
     // If no remaining slots, return
