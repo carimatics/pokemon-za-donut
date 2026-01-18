@@ -253,15 +253,33 @@ export function BerryStockTable({
                 <label htmlFor={`stock-${berry.id}`} className="text-sm font-medium text-gray-700">
                   個数:
                 </label>
-                <input
-                  id={`stock-${berry.id}`}
-                  type="number"
-                  min="0"
-                  value={berryStocks[berry.id] || 0}
-                  onChange={(e) => onStockChange(berry.id, parseInt(e.target.value, 10) || 0)}
-                  className="border rounded px-3 py-2 w-24 text-center"
-                  aria-label={`${berry.name}の個数`}
-                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onStockChange(berry.id, Math.max(0, (berryStocks[berry.id] || 0) - 1))}
+                    className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-lg font-bold text-gray-700 transition-colors"
+                    aria-label={`${berry.name}の個数を減らす`}
+                  >
+                    −
+                  </button>
+                  <input
+                    id={`stock-${berry.id}`}
+                    type="number"
+                    min="0"
+                    value={berryStocks[berry.id] || 0}
+                    onChange={(e) => onStockChange(berry.id, parseInt(e.target.value, 10) || 0)}
+                    className="border rounded px-3 py-2 w-16 text-center"
+                    aria-label={`${berry.name}の個数`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onStockChange(berry.id, (berryStocks[berry.id] || 0) + 1)}
+                    className="w-10 h-10 flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded-lg font-bold text-white transition-colors"
+                    aria-label={`${berry.name}の個数を増やす`}
+                  >
+                    ＋
+                  </button>
+                </div>
               </div>
             </div>
           ))}

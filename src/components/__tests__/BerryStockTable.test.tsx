@@ -255,4 +255,45 @@ describe('BerryStockTable', () => {
       expect(input).toHaveValue(0)
     })
   })
+
+  it('should increase berry count with plus button on mobile', async () => {
+    mockUseIsMobile.mockReturnValue(true)
+    const user = userEvent.setup()
+
+    render(<BerryStockTable {...defaultProps} />)
+
+    const plusButton = screen.getByLabelText('オレンのみの個数を増やす')
+    await user.click(plusButton)
+
+    expect(mockOnStockChange).toHaveBeenCalledWith('oran-berry', 6) // 5 + 1
+  })
+
+  it('should decrease berry count with minus button on mobile', async () => {
+    mockUseIsMobile.mockReturnValue(true)
+    const user = userEvent.setup()
+
+    render(<BerryStockTable {...defaultProps} />)
+
+    const minusButton = screen.getByLabelText('オレンのみの個数を減らす')
+    await user.click(minusButton)
+
+    expect(mockOnStockChange).toHaveBeenCalledWith('oran-berry', 4) // 5 - 1
+  })
+
+  it('should not decrease below zero with minus button on mobile', async () => {
+    mockUseIsMobile.mockReturnValue(true)
+    const user = userEvent.setup()
+
+    const propsWithZeroStock = {
+      ...defaultProps,
+      berryStocks: { 'oran-berry': 0, 'pecha-berry': 3 },
+    }
+
+    render(<BerryStockTable {...propsWithZeroStock} />)
+
+    const minusButton = screen.getByLabelText('オレンのみの個数を減らす')
+    await user.click(minusButton)
+
+    expect(mockOnStockChange).toHaveBeenCalledWith('oran-berry', 0) // stays at 0
+  })
 })
