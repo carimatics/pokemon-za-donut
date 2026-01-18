@@ -24,28 +24,14 @@ interface RecipeResultsTableProps {
     slots: number
     berryCount: number
   }
-  onToggleBookmark?: (recipe: RecipeRow) => void
-  isBookmarked?: (recipe: RecipeRow) => boolean
-  showBookmarksOnly?: boolean
-  onToggleBookmarksFilter?: () => void
 }
 
 export function RecipeResultsTable({
   recipeRows,
   searchConditions,
-  onToggleBookmark,
-  isBookmarked,
-  showBookmarksOnly,
-  onToggleBookmarksFilter,
 }: RecipeResultsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [shareMessage, setShareMessage] = useState<string | null>(null)
-
-  // Filter bookmarked recipes if filter is active
-  const displayedRows = useMemo(() => {
-    if (!showBookmarksOnly || !isBookmarked) return recipeRows
-    return recipeRows.filter(row => isBookmarked(row))
-  }, [recipeRows, showBookmarksOnly, isBookmarked])
 
   // Handle recipe sharing
   const handleShareRecipe = useCallback(async (recipe: RecipeRow) => {
@@ -117,29 +103,6 @@ export function RecipeResultsTable({
         header: 'Fresh',
         cell: info => info.getValue(),
       },
-      ...(onToggleBookmark && isBookmarked
-        ? [
-            {
-              id: 'bookmark',
-              header: 'ブックマーク',
-              cell: (info: CellContext<RecipeRow, unknown>) => {
-                const recipe = info.row.original
-                const bookmarked = isBookmarked(recipe)
-                return (
-                  <button
-                    type="button"
-                    onClick={() => onToggleBookmark(recipe)}
-                    className="text-2xl hover:scale-110 transition-transform"
-                    aria-label={bookmarked ? 'ブックマークを解除' : 'ブックマークに追加'}
-                    title={bookmarked ? 'ブックマークを解除' : 'ブックマークに追加'}
-                  >
-                    {bookmarked ? '★' : '☆'}
-                  </button>
-                )
-              },
-            } as ColumnDef<RecipeRow>,
-          ]
-        : []),
       {
         id: 'share',
         header: '共有',
@@ -167,12 +130,12 @@ export function RecipeResultsTable({
         },
       },
     ],
-    [onToggleBookmark, isBookmarked, handleShareRecipe]
+    [handleShareRecipe]
   )
 
   // Create recipe table instance with sorting
   const table = useReactTable({
-    data: displayedRows,
+    data: recipeRows,
     columns,
     state: {
       sorting,
@@ -203,47 +166,28 @@ export function RecipeResultsTable({
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">レシピ検索結果</h2>
         {recipeRows.length > 0 && (
-          <div className="flex gap-2">
-            {onToggleBookmarksFilter && (
-              <button
-                type="button"
-                onClick={onToggleBookmarksFilter}
-                className={`px-4 py-2 rounded transition-colors flex items-center gap-2 ${
-                  showBookmarksOnly
-                    ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                title={showBookmarksOnly ? 'すべてのレシピを表示' : 'ブックマークのみ表示'}
-              >
-                <span className="text-xl" aria-hidden="true">
-                  {showBookmarksOnly ? '★' : '☆'}
-                </span>
-                {showBookmarksOnly ? 'ブックマークのみ' : 'すべて表示'}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleDownloadCSV}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
-              title="レシピをCSVファイルとしてダウンロード"
+          <button
+            type="button"
+            onClick={handleDownloadCSV}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
+            title="レシピをCSVファイルとしてダウンロード"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <title>ダウンロード</title>
-                <path
-                  fillRule="evenodd"
-                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              CSVダウンロード
-            </button>
-          </div>
+              <title>ダウンロード</title>
+              <path
+                fillRule="evenodd"
+                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            CSVダウンロード
+          </button>
         )}
       </div>
 

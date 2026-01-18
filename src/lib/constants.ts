@@ -5,7 +5,6 @@ export const STORAGE_KEYS = {
   SELECTED_DONUTS: 'pokemon-za-selected-donuts',
   BERRY_STOCKS: 'pokemon-za-berry-stocks',
   SLOTS: 'pokemon-za-slots',
-  BOOKMARKED_RECIPES: 'pokemon-za-bookmarked-recipes',
 } as const
 
 /**

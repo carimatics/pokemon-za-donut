@@ -1,12 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { useMemo, useCallback, useState } from 'react'
+import { useMemo, useCallback } from 'react'
 import { donuts } from '@/data/donuts'
 import { useBerryFilter } from '@/hooks/useBerryFilter'
 import { useBerryStocks } from '@/hooks/useBerryStocks'
 import { useDonutSelection } from '@/hooks/useDonutSelection'
 import { useRecipeFinder } from '@/hooks/useRecipeFinder'
-import { useRecipeBookmarks } from '@/hooks/useRecipeBookmarks'
 import { TabNavigation } from '@/components/TabNavigation'
 import { DonutSelectionTable } from '@/components/DonutSelectionTable'
 import { BerryStockTable } from '@/components/BerryStockTable'
@@ -86,22 +85,10 @@ function App() {
     clearWarning,
   } = useRecipeFinder()
 
-  const {
-    toggleBookmark,
-    isBookmarked,
-  } = useRecipeBookmarks()
-
-  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false)
-
   // Handle tab change with URL sync
   const handleTabChange = (tab: 'donuts' | 'berries' | 'results') => {
     navigate({ search: { ...search, tab } })
   }
-
-  // Handle bookmarks filter toggle
-  const handleToggleBookmarksFilter = useCallback(() => {
-    setShowBookmarksOnly(prev => !prev)
-  }, [])
 
   // Handle find recipes with tab navigation and error handling
   const onFindRecipes = async () => {
@@ -165,10 +152,6 @@ function App() {
         <RecipeResultsTable
           recipeRows={recipeRows}
           searchConditions={searchConditions}
-          onToggleBookmark={toggleBookmark}
-          isBookmarked={isBookmarked}
-          showBookmarksOnly={showBookmarksOnly}
-          onToggleBookmarksFilter={handleToggleBookmarksFilter}
         />
       )}
 
