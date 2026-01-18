@@ -2,8 +2,10 @@ import { useMemo, useState, useEffect } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
+  getSortedRowModel,
   flexRender,
   type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table'
 import type { Berry } from '@/lib/types'
 import { berryStocksToCSV, csvToBerryStocks } from '@/lib/csv'
@@ -32,6 +34,9 @@ export function BerryStockTable({
   onSearchTextChange,
 }: BerryStockTableProps) {
   const isMobile = useIsMobile()
+
+  // Sorting state
+  const [sorting, setSorting] = useState<SortingState>([])
 
   // CSV state
   const [csvText, setCsvText] = useState('')
@@ -92,27 +97,62 @@ export function BerryStockTable({
       {
         accessorKey: 'flavors.sweet',
         header: 'Sweet',
-        cell: info => info.row.original.flavors.sweet,
+        cell: info => {
+          const value = info.row.original.flavors.sweet
+          return (
+            <span className={`inline-block px-2 py-1 rounded ${value > 0 ? 'bg-pink-50' : ''}`}>
+              {value}
+            </span>
+          )
+        },
       },
       {
         accessorKey: 'flavors.spicy',
         header: 'Spicy',
-        cell: info => info.row.original.flavors.spicy,
+        cell: info => {
+          const value = info.row.original.flavors.spicy
+          return (
+            <span className={`inline-block px-2 py-1 rounded ${value > 0 ? 'bg-red-50' : ''}`}>
+              {value}
+            </span>
+          )
+        },
       },
       {
         accessorKey: 'flavors.sour',
         header: 'Sour',
-        cell: info => info.row.original.flavors.sour,
+        cell: info => {
+          const value = info.row.original.flavors.sour
+          return (
+            <span className={`inline-block px-2 py-1 rounded ${value > 0 ? 'bg-yellow-50' : ''}`}>
+              {value}
+            </span>
+          )
+        },
       },
       {
         accessorKey: 'flavors.bitter',
         header: 'Bitter',
-        cell: info => info.row.original.flavors.bitter,
+        cell: info => {
+          const value = info.row.original.flavors.bitter
+          return (
+            <span className={`inline-block px-2 py-1 rounded ${value > 0 ? 'bg-blue-50' : ''}`}>
+              {value}
+            </span>
+          )
+        },
       },
       {
         accessorKey: 'flavors.fresh',
         header: 'Fresh',
-        cell: info => info.row.original.flavors.fresh,
+        cell: info => {
+          const value = info.row.original.flavors.fresh
+          return (
+            <span className={`inline-block px-2 py-1 rounded ${value > 0 ? 'bg-green-50' : ''}`}>
+              {value}
+            </span>
+          )
+        },
       },
       {
         accessorKey: 'hyper',
@@ -137,11 +177,16 @@ export function BerryStockTable({
     [onStockChange, berryStocks]
   )
 
-  // Create berry table instance
+  // Create berry table instance with sorting
   const table = useReactTable({
     data: filteredBerries,
     columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   return (
@@ -295,14 +340,21 @@ export function BerryStockTable({
                   {headerGroup.headers.map(header => (
                     <th
                       key={header.id}
-                      className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                      className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                      onClick={header.column.getToggleSortingHandler()}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                      <div className="flex items-center gap-1">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                        {{
+                          asc: ' ↑',
+                          desc: ' ↓',
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </div>
                     </th>
                   ))}
                 </tr>
