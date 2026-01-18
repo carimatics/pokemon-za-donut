@@ -18,11 +18,13 @@ interface RecipeResultsTableProps {
     slots: number
     berryCount: number
   }
+  searchTime?: number | null
 }
 
 export function RecipeResultsTable({
   recipeRows,
   searchConditions,
+  searchTime,
 }: RecipeResultsTableProps) {
   const isMobile = useIsMobile()
   const [sorting, setSorting] = useState<SortingState>([])
@@ -156,6 +158,14 @@ export function RecipeResultsTable({
           </button>
         )}
       </div>
+
+      {/* Search Results Summary */}
+      {recipeRows.length > 0 && searchTime !== null && searchTime !== undefined && (
+        <div className="text-sm text-gray-600">
+          <span className="font-medium">{recipeRows.length.toLocaleString()}</span> 件の結果を
+          <span className="font-medium"> {searchTime.toFixed(3)}</span> 秒で計算しました
+        </div>
+      )}
 
       {/* Search Conditions Display */}
       {searchConditions && recipeRows.length > 0 && (

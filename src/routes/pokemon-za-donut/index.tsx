@@ -91,6 +91,7 @@ function App() {
     clearError,
     warning,
     clearWarning,
+    searchTime,
   } = useRecipeFinder()
 
   // Handle tab change with URL sync
@@ -162,6 +163,7 @@ function App() {
         <RecipeResultsTable
           recipeRows={recipeRows}
           searchConditions={searchConditions}
+          searchTime={searchTime}
         />
       )}
 

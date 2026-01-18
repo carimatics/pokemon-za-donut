@@ -10,6 +10,7 @@ export function useRecipeFinder() {
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
+  const [searchTime, setSearchTime] = useState<number | null>(null)
 
   const handleFindRecipes = useCallback(async (
     selectedDonuts: Set<string>,
@@ -19,6 +20,9 @@ export function useRecipeFinder() {
     setIsSearching(true)
     setError(null)
     setWarning(null)
+    setSearchTime(null)
+
+    const startTime = performance.now()
 
     try {
       // Simulate async operation to keep UI responsive during heavy computation
@@ -75,6 +79,8 @@ export function useRecipeFinder() {
       })
 
       setRecipes(newRecipes)
+      const endTime = performance.now()
+      setSearchTime((endTime - startTime) / 1000) // Convert to seconds
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'レシピの検索中にエラーが発生しました'
       setError(errorMessage)
@@ -162,5 +168,6 @@ export function useRecipeFinder() {
     clearError: () => setError(null),
     warning,
     clearWarning: () => setWarning(null),
+    searchTime,
   }
 }
