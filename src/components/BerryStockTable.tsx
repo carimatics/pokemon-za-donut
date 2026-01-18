@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,6 +11,7 @@ import type { Berry } from '@/lib/types'
 import { berryStocksToCSV, csvToBerryStocks } from '@/lib/csv'
 import { BerryStockInput } from './BerryStockInput'
 import { useIsMobile } from '@/hooks/useMediaQuery'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface BerryStockTableProps {
   filteredBerries: Berry[]
@@ -46,6 +47,17 @@ export function BerryStockTable({
 
   // Local search input state for IME support
   const [localSearchText, setLocalSearchText] = useState(searchText)
+
+  // Refs for focus management
+  const modalRef = useRef<HTMLDivElement>(null)
+  const resetButtonRef = useRef<HTMLButtonElement>(null)
+
+  // Focus trap for modal
+  useFocusTrap(modalRef, {
+    enabled: showResetModal,
+    onEscape: () => setShowResetModal(false),
+    returnFocusRef: resetButtonRef,
+  })
 
   // Sync local state with prop when it changes externally (e.g., from URL)
   useEffect(() => {
@@ -209,6 +221,7 @@ export function BerryStockTable({
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">きのみ個数入力</h2>
         <button
+          ref={resetButtonRef}
           type="button"
           onClick={() => setShowResetModal(true)}
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
@@ -431,13 +444,15 @@ export function BerryStockTable({
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={() => setShowResetModal(false)}
         >
-          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content click prevention */}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal content interaction */}
           <div
+            ref={modalRef}
             className="bg-white rounded-lg p-6 max-w-md mx-4"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-modal-title"
           >
-            <h3 className="text-lg font-semibold mb-4">確認</h3>
+            <h3 id="reset-modal-title" className="text-lg font-semibold mb-4">確認</h3>
             <p className="text-gray-700 mb-6">
               すべてのきのみ個数を0にリセットします。この操作は取り消せません。よろしいですか？
             </p>

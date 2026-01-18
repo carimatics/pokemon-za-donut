@@ -2,6 +2,51 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useRecipeFinder } from '../useRecipeFinder'
 import type { DonutRecipe } from '@/lib/types'
+import type { WorkerResponse } from '@/workers/finder.worker'
+
+// Mock Web Worker
+class MockWorker {
+  url: string | URL
+  onmessage: ((event: MessageEvent) => void) | null = null
+  private listeners: Map<string, Set<(event: MessageEvent) => void>> = new Map()
+
+  constructor(url: string | URL) {
+    this.url = url
+  }
+
+  postMessage(_data: unknown) {
+    // Simulate async worker processing
+    setTimeout(() => {
+      const messageListeners = this.listeners.get('message') || new Set()
+      const response = (globalThis as any).__mockWorkerResponse as WorkerResponse
+
+      const event = new MessageEvent('message', { data: response })
+
+      // Call all registered message listeners
+      for (const listener of messageListeners) {
+        listener(event)
+      }
+    }, 0)
+  }
+
+  addEventListener(type: string, listener: (event: MessageEvent) => void) {
+    if (!this.listeners.has(type)) {
+      this.listeners.set(type, new Set())
+    }
+    this.listeners.get(type)!.add(listener)
+  }
+
+  removeEventListener(type: string, listener: (event: MessageEvent) => void) {
+    this.listeners.get(type)?.delete(listener)
+  }
+
+  terminate() {
+    this.listeners.clear()
+  }
+}
+
+// Set up Worker mock
+;(globalThis as any).Worker = MockWorker
 
 // Mock the finder module
 vi.mock('@/lib/finder', () => ({
@@ -48,14 +93,13 @@ vi.mock('@/data/donuts', () => ({
   ],
 }))
 
-import { findRequiredCombinations } from '@/lib/finder'
 import { berries } from '@/data/berries'
-
-const mockFindRequiredCombinations = findRequiredCombinations as ReturnType<typeof vi.fn>
 
 describe('useRecipeFinder', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Reset mock worker response
+    ;(globalThis as any).__mockWorkerResponse = undefined
   })
 
   it('should initialize with empty state', () => {
@@ -83,10 +127,14 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    mockFindRequiredCombinations.mockReturnValue({
-      recipes: [mockRecipe],
-      limitReached: false,
-    })
+    // Set up mock worker response
+    ;(globalThis as any).__mockWorkerResponse = {
+      success: true,
+      result: {
+        recipes: [mockRecipe],
+        limitReached: false,
+      },
+    } as WorkerResponse
 
     const { result } = renderHook(() => useRecipeFinder())
 
@@ -170,10 +218,14 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    mockFindRequiredCombinations.mockReturnValue({
-      recipes: [mockRecipe],
-      limitReached: true, // Limit reached
-    })
+    // Set up mock worker response with limit reached
+    ;(globalThis as any).__mockWorkerResponse = {
+      success: true,
+      result: {
+        recipes: [mockRecipe],
+        limitReached: true,
+      },
+    } as WorkerResponse
 
     const { result } = renderHook(() => useRecipeFinder())
 
@@ -213,10 +265,14 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    mockFindRequiredCombinations.mockReturnValue({
-      recipes: [mockRecipe],
-      limitReached: false,
-    })
+    // Set up mock worker response
+    ;(globalThis as any).__mockWorkerResponse = {
+      success: true,
+      result: {
+        recipes: [mockRecipe],
+        limitReached: false,
+      },
+    } as WorkerResponse
 
     const { result } = renderHook(() => useRecipeFinder())
 
@@ -263,10 +319,14 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    mockFindRequiredCombinations.mockReturnValue({
-      recipes: [mockRecipe1Star],
-      limitReached: false,
-    })
+    // Set up mock worker response
+    ;(globalThis as any).__mockWorkerResponse = {
+      success: true,
+      result: {
+        recipes: [mockRecipe1Star],
+        limitReached: false,
+      },
+    } as WorkerResponse
 
     const { result } = renderHook(() => useRecipeFinder())
 
@@ -326,10 +386,14 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    mockFindRequiredCombinations.mockReturnValue({
-      recipes: [mockRecipe],
-      limitReached: true,
-    })
+    // Set up mock worker response with limit reached
+    ;(globalThis as any).__mockWorkerResponse = {
+      success: true,
+      result: {
+        recipes: [mockRecipe],
+        limitReached: true,
+      },
+    } as WorkerResponse
 
     const { result } = renderHook(() => useRecipeFinder())
 
@@ -368,10 +432,14 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    mockFindRequiredCombinations.mockReturnValue({
-      recipes: [mockRecipe],
-      limitReached: false,
-    })
+    // Set up mock worker response
+    ;(globalThis as any).__mockWorkerResponse = {
+      success: true,
+      result: {
+        recipes: [mockRecipe],
+        limitReached: false,
+      },
+    } as WorkerResponse
 
     const { result } = renderHook(() => useRecipeFinder())
 

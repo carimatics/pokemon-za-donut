@@ -1,9 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { berries } from '@/data/berries'
 import { donuts } from '@/data/donuts'
-import { findRequiredCombinations } from '@/lib/finder'
 import type { BerryStock, DonutRecipe, RecipeRow } from '@/lib/types'
 import { DEFAULT_VALUES } from '@/lib/constants'
+import type { WorkerRequest, WorkerResponse } from '@/workers/finder.worker'
 
 export function useRecipeFinder() {
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
@@ -11,6 +11,21 @@ export function useRecipeFinder() {
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [searchTime, setSearchTime] = useState<number | null>(null)
+
+  // Web Worker reference
+  const workerRef = useRef<Worker | null>(null)
+
+  // Initialize Web Worker
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL('../workers/finder.worker.ts', import.meta.url),
+      { type: 'module' }
+    )
+
+    return () => {
+      workerRef.current?.terminate()
+    }
+  }, [])
 
   const handleFindRecipes = useCallback(async (
     selectedDonuts: Set<string>,
@@ -25,60 +40,75 @@ export function useRecipeFinder() {
     const startTime = performance.now()
 
     try {
-      // Simulate async operation to keep UI responsive during heavy computation
-      const newRecipes = await new Promise<Map<string, DonutRecipe[]>>((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            const recipesMap = new Map<string, DonutRecipe[]>()
-            const limitReachedDonuts: string[] = []
+      // Build berry stocks array
+      const stocks: BerryStock[] = berries
+        .filter(berry => (berryStocks[berry.id] || 0) > 0)
+        .map(berry => ({
+          berry,
+          count: berryStocks[berry.id] || 0
+        }))
 
-            // Build berry stocks array
-            const stocks: BerryStock[] = berries
-              .filter(berry => (berryStocks[berry.id] || 0) > 0)
-              .map(berry => ({
-                berry,
-                count: berryStocks[berry.id] || 0
-              }))
+      // Validate inputs
+      if (stocks.length === 0) {
+        throw new Error('きのみが選択されていません。\n\n解決方法：\n• 「きのみ個数入力」タブで所持しているきのみの個数を1以上に設定してください')
+      }
 
-            // Validate inputs
-            if (stocks.length === 0) {
-              throw new Error('きのみが選択されていません。\n\n解決方法：\n• 「きのみ個数入力」タブで所持しているきのみの個数を1以上に設定してください')
-            }
+      if (selectedDonuts.size === 0) {
+        throw new Error('ドーナツが選択されていません。\n\n解決方法：\n• 「ドーナツ選択」タブで作りたいドーナツをチェックしてください')
+      }
 
-            if (selectedDonuts.size === 0) {
-              throw new Error('ドーナツが選択されていません。\n\n解決方法：\n• 「ドーナツ選択」タブで作りたいドーナツをチェックしてください')
-            }
+      // Process recipes using Web Worker
+      const recipesMap = new Map<string, DonutRecipe[]>()
+      const limitReachedDonuts: string[] = []
 
-            // Find recipes for each selected donut
-            selectedDonuts.forEach(donutId => {
-              const donut = donuts.find(d => d.id === donutId)
-              if (donut) {
-                const result = findRequiredCombinations(donut, stocks, slots)
-                recipesMap.set(donutId, result.recipes)
+      // Find recipes for each selected donut using Web Worker
+      const promises = Array.from(selectedDonuts).map(async (donutId) => {
+        const donut = donuts.find(d => d.id === donutId)
+        if (!donut) return
 
-                // Track if limit was reached for this donut
-                if (result.limitReached) {
-                  limitReachedDonuts.push(donut.name)
-                }
-              }
-            })
-
-            // Set warning if any donut reached the limit
-            if (limitReachedDonuts.length > 0) {
-              const donutList = limitReachedDonuts.join('、')
-              setWarning(
-                `${donutList} のレシピが非常に多く、最初の${DEFAULT_VALUES.MAX_SOLUTIONS.toLocaleString()}件のみ表示しています。`
-              )
-            }
-
-            resolve(recipesMap)
-          } catch (err) {
-            reject(err)
+        // Use Web Worker for heavy computation
+        const result = await new Promise<{ recipes: DonutRecipe[]; limitReached: boolean }>((resolve, reject) => {
+          if (!workerRef.current) {
+            reject(new Error('Web Worker is not initialized'))
+            return
           }
-        }, 0)
+
+          const request: WorkerRequest = { donut, stocks, slots }
+
+          const handleMessage = (e: MessageEvent<WorkerResponse>) => {
+            if (e.data.success && e.data.result) {
+              resolve({
+                recipes: e.data.result.recipes,
+                limitReached: e.data.result.limitReached,
+              })
+            } else {
+              reject(new Error(e.data.error || 'Worker error'))
+            }
+            workerRef.current?.removeEventListener('message', handleMessage)
+          }
+
+          workerRef.current.addEventListener('message', handleMessage)
+          workerRef.current.postMessage(request)
+        })
+
+        recipesMap.set(donutId, result.recipes)
+
+        if (result.limitReached) {
+          limitReachedDonuts.push(donut.name)
+        }
       })
 
-      setRecipes(newRecipes)
+      await Promise.all(promises)
+
+      // Set warning if any donut reached the limit
+      if (limitReachedDonuts.length > 0) {
+        const donutList = limitReachedDonuts.join('、')
+        setWarning(
+          `${donutList} のレシピが非常に多く、最初の${DEFAULT_VALUES.MAX_SOLUTIONS.toLocaleString()}件のみ表示しています。`
+        )
+      }
+
+      setRecipes(recipesMap)
       const endTime = performance.now()
       setSearchTime((endTime - startTime) / 1000) // Convert to seconds
     } catch (err) {
@@ -88,7 +118,7 @@ export function useRecipeFinder() {
     } finally {
       setIsSearching(false)
     }
-  }, [])
+  }, [workerRef])
 
   // Flatten recipes for table display
   const recipeRows = useMemo<RecipeRow[]>(() => {
