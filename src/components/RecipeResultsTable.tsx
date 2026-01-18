@@ -234,7 +234,7 @@ export function RecipeResultsTable({
                   </div>
                   <div className="text-center p-2 bg-orange-50 rounded">
                     <p className="text-gray-600">ハラモチ</p>
-                    <p className="font-medium text-orange-700">{recipe.energyBoost}</p>
+                    <p className="font-medium text-orange-700">{recipe.donutEnergy}</p>
                   </div>
                 </div>
               )}
