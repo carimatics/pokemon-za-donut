@@ -64,27 +64,27 @@ export function RecipeResultsTable({
       },
       {
         accessorKey: 'sweet',
-        header: 'Sweet',
+        header: 'スイート',
         cell: info => info.getValue(),
       },
       {
         accessorKey: 'spicy',
-        header: 'Spicy',
+        header: 'スパイシー',
         cell: info => info.getValue(),
       },
       {
         accessorKey: 'sour',
-        header: 'Sour',
+        header: 'サワー',
         cell: info => info.getValue(),
       },
       {
         accessorKey: 'bitter',
-        header: 'Bitter',
+        header: 'ビター',
         cell: info => info.getValue(),
       },
       {
         accessorKey: 'fresh',
-        header: 'Fresh',
+        header: 'フレッシュ',
         cell: info => info.getValue(),
       },
       {
@@ -101,7 +101,7 @@ export function RecipeResultsTable({
         cell: info => info.getValue(),
       },
       {
-        accessorKey: 'energyBoost',
+        accessorKey: 'donutEnergy',
         header: 'ハラモチエネルギー',
         cell: info => info.getValue(),
       },

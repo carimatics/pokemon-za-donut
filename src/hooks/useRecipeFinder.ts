@@ -131,7 +131,7 @@ export function useRecipeFinder() {
 
         // Calculate plus level and energy boost
         const plusLevel = Math.floor(totalLevel * boostMultiplier)
-        const energyBoost = Math.floor(totalCalories * boostMultiplier)
+        const donutEnergy = Math.floor(totalCalories * boostMultiplier)
 
         rows.push({
           donutName: donut.name,
@@ -146,7 +146,7 @@ export function useRecipeFinder() {
           fresh: totalFlavors.fresh,
           stars,
           plusLevel,
-          energyBoost,
+          donutEnergy,
         })
       })
     })

@@ -44,5 +44,5 @@ export interface RecipeRow {
   fresh: number;
   stars: number;
   plusLevel: number;
-  energyBoost: number;
+  donutEnergy: number;
 }

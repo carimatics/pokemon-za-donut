@@ -51,7 +51,7 @@ export function csvToBerryStocks(csv: string): Record<string, number> {
  */
 export function recipeRowsToCSV(recipeRows: RecipeRow[]): string {
   const rows: string[] = [
-    'ドーナツ,レシピ#,使用きのみ,合計カロリー,合計レベル,Sweet,Spicy,Sour,Bitter,Fresh'
+    'ドーナツ,レシピ#,使用きのみ,合計カロリー,合計レベル,スイート,スパイシー,サワー,ビター,フレッシュ,星,プラスレベル,ハラモチエネルギー'
   ]
 
   for (const row of recipeRows) {
@@ -66,6 +66,9 @@ export function recipeRowsToCSV(recipeRows: RecipeRow[]): string {
       row.sour,
       row.bitter,
       row.fresh,
+      row.stars,
+      row.plusLevel,
+      row.donutEnergy,
     ].join(',')
 
     rows.push(csvRow)

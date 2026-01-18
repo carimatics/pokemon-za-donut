@@ -243,7 +243,7 @@ describe('useRecipeFinder', () => {
     // Total flavor sum = 80, which is < 120, so 0 stars
     expect(row.stars).toBe(0)
     expect(row.plusLevel).toBe(8) // No boost with 0 stars
-    expect(row.energyBoost).toBe(160) // No boost with 0 stars
+    expect(row.donutEnergy).toBe(160) // No boost with 0 stars
   })
 
   it('should calculate stars correctly based on flavor sum', async () => {
@@ -281,7 +281,7 @@ describe('useRecipeFinder', () => {
     const row = result.current.recipeRows[0]
     expect(row.stars).toBe(1)
     expect(row.plusLevel).toBe(11) // 10 * 1.1 = 11
-    expect(row.energyBoost).toBe(110) // 100 * 1.1 = 110
+    expect(row.donutEnergy).toBe(110) // 100 * 1.1 = 110
   })
 
   it('should clear error when clearError is called', async () => {
