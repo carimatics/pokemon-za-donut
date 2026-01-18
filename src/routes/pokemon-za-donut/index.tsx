@@ -108,7 +108,8 @@ function App() {
 
   // Compute search conditions for results display
   const searchConditions = useMemo(() => {
-    if (recipeRows.length === 0) return undefined
+    // Only show search conditions if donuts are selected (regardless of recipe count)
+    if (selectedDonuts.size === 0) return undefined
 
     const selectedDonutNames = Array.from(selectedDonuts)
       .map(id => donuts.find(d => d.id === id)?.name)
@@ -121,7 +122,7 @@ function App() {
       slots,
       berryCount,
     }
-  }, [selectedDonuts, slots, berryStocks, recipeRows.length])
+  }, [selectedDonuts, slots, berryStocks])
 
   return (
     <div className="container mx-auto p-4">

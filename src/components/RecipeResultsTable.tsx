@@ -193,7 +193,9 @@ export function RecipeResultsTable({
 
       {recipeRows.length === 0 ? (
         <p className="text-gray-500">
-          レシピが見つかりませんでした。ドーナツ選択タブでドーナツを選択し、レシピを検索してください。
+          {searchConditions && searchConditions.selectedDonuts.length > 0
+            ? '選択されたドーナツに対して、条件を満たすレシピが見つかりませんでした。'
+            : 'ドーナツ選択タブでドーナツを選択し、レシピを検索してください。'}
         </p>
       ) : isMobile ? (
         // Mobile: Card View
