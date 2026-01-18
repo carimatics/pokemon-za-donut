@@ -100,17 +100,17 @@ export function BerryStockTable({
       },
       {
         accessorKey: 'level',
-        header: 'Level',
+        header: 'レベル',
         cell: info => info.getValue(),
       },
       {
         accessorKey: 'calories',
-        header: 'Calories',
+        header: 'カロリー',
         cell: info => info.getValue(),
       },
       {
         accessorKey: 'flavors.sweet',
-        header: 'Sweet',
+        header: 'スイート',
         cell: info => {
           const value = info.row.original.flavors.sweet
           return (
@@ -122,7 +122,7 @@ export function BerryStockTable({
       },
       {
         accessorKey: 'flavors.spicy',
-        header: 'Spicy',
+        header: 'スパイシー',
         cell: info => {
           const value = info.row.original.flavors.spicy
           return (
@@ -134,7 +134,7 @@ export function BerryStockTable({
       },
       {
         accessorKey: 'flavors.sour',
-        header: 'Sour',
+        header: 'サワー',
         cell: info => {
           const value = info.row.original.flavors.sour
           return (
@@ -146,7 +146,7 @@ export function BerryStockTable({
       },
       {
         accessorKey: 'flavors.bitter',
-        header: 'Bitter',
+        header: 'ビター',
         cell: info => {
           const value = info.row.original.flavors.bitter
           return (
@@ -158,7 +158,7 @@ export function BerryStockTable({
       },
       {
         accessorKey: 'flavors.fresh',
-        header: 'Fresh',
+        header: 'フレッシュ',
         cell: info => {
           const value = info.row.original.flavors.fresh
           return (

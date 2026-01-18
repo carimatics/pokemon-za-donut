@@ -50,27 +50,27 @@ export function DonutSelectionTable({
       },
       {
         accessorKey: 'flavors.sweet',
-        header: 'Sweet',
+        header: 'スイート',
         cell: info => info.row.original.flavors.sweet,
       },
       {
         accessorKey: 'flavors.spicy',
-        header: 'Spicy',
+        header: 'スパイシー',
         cell: info => info.row.original.flavors.spicy,
       },
       {
         accessorKey: 'flavors.sour',
-        header: 'Sour',
+        header: 'サワー',
         cell: info => info.row.original.flavors.sour,
       },
       {
         accessorKey: 'flavors.bitter',
-        header: 'Bitter',
+        header: 'ビター',
         cell: info => info.row.original.flavors.bitter,
       },
       {
         accessorKey: 'flavors.fresh',
-        header: 'Fresh',
+        header: 'フレッシュ',
         cell: info => info.row.original.flavors.fresh,
       },
     ],
