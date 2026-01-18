@@ -23,7 +23,7 @@ Pokémon LEGENDS Z-A DLC「M次元ラッシュ」のストーリー中に作成�
 
 ### 前提条件
 
-- Node.js 24.x 以上
+- Node.js 22.x 以上
 - npm
 
 ### インストール
