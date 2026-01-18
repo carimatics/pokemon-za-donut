@@ -10,6 +10,7 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { RecipeRow } from '@/lib/types'
 import { recipeRowsToCSV, downloadCSV } from '@/lib/csv'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 
 // Enable virtualization for tables with more than this many rows
 const VIRTUALIZATION_THRESHOLD = 100
@@ -27,6 +28,7 @@ export function RecipeResultsTable({
   recipeRows,
   searchConditions,
 }: RecipeResultsTableProps) {
+  const isMobile = useIsMobile()
   const [sorting, setSorting] = useState<SortingState>([])
 
   // Handle CSV download
@@ -175,6 +177,50 @@ export function RecipeResultsTable({
         <p className="text-gray-500">
           レシピが見つかりませんでした。ドーナツ選択タブでドーナツを選択し、レシピを検索してください。
         </p>
+      ) : isMobile ? (
+        // Mobile: Card View
+        <div className="space-y-3">
+          {recipeRows.map((recipe) => (
+            <div key={`${recipe.donutName}-${recipe.recipeIndex}`} className="border border-gray-200 rounded-lg p-4 bg-white">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-medium text-gray-900">{recipe.donutName}</h3>
+                  <p className="text-sm text-gray-500">レシピ #{recipe.recipeIndex}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-blue-600">{recipe.totalCalories}cal</p>
+                  <p className="text-xs text-gray-500">Lv.{recipe.totalLevel}</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <p className="text-xs font-medium text-gray-700 mb-1">使用きのみ:</p>
+                <p className="text-sm text-gray-600">{recipe.berries}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="text-center p-2 bg-pink-50 rounded">
+                  <p className="text-gray-600">Sweet</p>
+                  <p className="font-medium">{recipe.sweet}</p>
+                </div>
+                <div className="text-center p-2 bg-red-50 rounded">
+                  <p className="text-gray-600">Spicy</p>
+                  <p className="font-medium">{recipe.spicy}</p>
+                </div>
+                <div className="text-center p-2 bg-yellow-50 rounded">
+                  <p className="text-gray-600">Sour</p>
+                  <p className="font-medium">{recipe.sour}</p>
+                </div>
+                <div className="text-center p-2 bg-green-50 rounded">
+                  <p className="text-gray-600">Bitter</p>
+                  <p className="font-medium">{recipe.bitter}</p>
+                </div>
+                <div className="text-center p-2 bg-blue-50 rounded">
+                  <p className="text-gray-600">Fresh</p>
+                  <p className="font-medium">{recipe.fresh}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : shouldVirtualize ? (
         // Virtualized rendering for large datasets (>100 rows)
         <div

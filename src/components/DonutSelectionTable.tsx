@@ -9,6 +9,7 @@ import { donuts } from '@/data/donuts'
 import type { Donut } from '@/lib/types'
 import { GuideCard } from './GuideCard'
 import { DonutCheckbox } from './DonutCheckbox'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 
 interface DonutSelectionTableProps {
   selectedDonuts: Set<string>
@@ -23,6 +24,8 @@ export function DonutSelectionTable({
   slots,
   onSlotsChange,
 }: DonutSelectionTableProps) {
+  const isMobile = useIsMobile()
+
   // Donut selection table columns
   const columns = useMemo<ColumnDef<Donut>[]>(
     () => [
@@ -119,42 +122,97 @@ export function DonutSelectionTable({
         />
       )}
 
-      {/* Donut Table */}
-      <div className="overflow-x-auto border rounded">
-        <table className="min-w-full divide-y divide-gray-200">
-          <caption className="sr-only">ドーナツ選択テーブル</caption>
-          <thead className="bg-gray-50">
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id} className="hover:bg-gray-50">
-                {row.getVisibleCells().map(cell => (
-                  <td key={cell.id} className="px-4 py-3 text-sm">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Donut Table/Cards */}
+      {isMobile ? (
+        // Mobile: Card View
+        <div className="space-y-3">
+          {donuts.map(donut => {
+            const isSelected = selectedDonuts.has(donut.id)
+            return (
+              <div
+                key={donut.id}
+                className={`border rounded-lg p-4 transition-all ${
+                  isSelected
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="pt-1">
+                    <DonutCheckbox
+                      donut={donut}
+                      checked={isSelected}
+                      onToggle={onDonutToggle}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900 mb-2">{donut.name}</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Sweet:</span>
+                        <span className="font-medium">{donut.flavors.sweet}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Spicy:</span>
+                        <span className="font-medium">{donut.flavors.spicy}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Sour:</span>
+                        <span className="font-medium">{donut.flavors.sour}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Bitter:</span>
+                        <span className="font-medium">{donut.flavors.bitter}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Fresh:</span>
+                        <span className="font-medium">{donut.flavors.fresh}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        // Desktop: Table View
+        <div className="overflow-x-auto border rounded">
+          <table className="min-w-full divide-y divide-gray-200">
+            <caption className="sr-only">ドーナツ選択テーブル</caption>
+            <thead className="bg-gray-50">
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th
+                      key={header.id}
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {table.getRowModel().rows.map(row => (
+                <tr key={row.id} className="hover:bg-gray-50">
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id} className="px-4 py-3 text-sm">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   )
 }

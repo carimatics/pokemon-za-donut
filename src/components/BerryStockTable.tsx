@@ -8,6 +8,7 @@ import {
 import type { Berry } from '@/lib/types'
 import { berryStocksToCSV, csvToBerryStocks } from '@/lib/csv'
 import { BerryStockInput } from './BerryStockInput'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 
 interface BerryStockTableProps {
   filteredBerries: Berry[]
@@ -30,6 +31,8 @@ export function BerryStockTable({
   searchText,
   onSearchTextChange,
 }: BerryStockTableProps) {
+  const isMobile = useIsMobile()
+
   // CSV state
   const [csvText, setCsvText] = useState('')
 
@@ -199,42 +202,108 @@ export function BerryStockTable({
         </div>
       </div>
 
-      {/* Berry Table using react-table */}
-      <div className="overflow-x-auto border rounded">
-        <table className="min-w-full divide-y divide-gray-200">
-          <caption className="sr-only">きのみ在庫入力テーブル</caption>
-          <thead className="bg-gray-50">
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id} className="hover:bg-gray-50">
-                {row.getVisibleCells().map(cell => (
-                  <td key={cell.id} className="px-4 py-2 text-sm">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Berry Table/Cards */}
+      {isMobile ? (
+        // Mobile: Card View
+        <div className="space-y-3">
+          {filteredBerries.map(berry => (
+            <div key={berry.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="font-medium text-gray-900">{berry.name}</h3>
+                  <p className="text-xs text-gray-500">{berry.id}</p>
+                </div>
+                {berry.hyper && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                    異次元
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Sweet:</span>
+                  <span className="font-medium">{berry.flavors.sweet}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Spicy:</span>
+                  <span className="font-medium">{berry.flavors.spicy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Sour:</span>
+                  <span className="font-medium">{berry.flavors.sour}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Bitter:</span>
+                  <span className="font-medium">{berry.flavors.bitter}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fresh:</span>
+                  <span className="font-medium">{berry.flavors.fresh}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">カロリー:</span>
+                  <span className="font-medium">{berry.calories}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">レベル:</span>
+                  <span className="font-medium">{berry.level}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <label htmlFor={`stock-${berry.id}`} className="text-sm font-medium text-gray-700">
+                  個数:
+                </label>
+                <input
+                  id={`stock-${berry.id}`}
+                  type="number"
+                  min="0"
+                  value={berryStocks[berry.id] || 0}
+                  onChange={(e) => onStockChange(berry.id, parseInt(e.target.value, 10) || 0)}
+                  className="border rounded px-3 py-2 w-24 text-center"
+                  aria-label={`${berry.name}の個数`}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Desktop: Table View
+        <div className="overflow-x-auto border rounded">
+          <table className="min-w-full divide-y divide-gray-200">
+            <caption className="sr-only">きのみ在庫入力テーブル</caption>
+            <thead className="bg-gray-50">
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th
+                      key={header.id}
+                      className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {table.getRowModel().rows.map(row => (
+                <tr key={row.id} className="hover:bg-gray-50">
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id} className="px-4 py-2 text-sm">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* CSV Import/Export */}
       <div className="space-y-2">
