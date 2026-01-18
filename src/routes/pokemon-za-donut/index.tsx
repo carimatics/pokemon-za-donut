@@ -50,6 +50,13 @@ function App() {
     [navigate]
   )
 
+  const handleSlotsChange = useCallback(
+    (slots: number) => {
+      navigate({ search: (prev) => ({ ...prev, slots }) })
+    },
+    [navigate]
+  )
+
   // Custom hooks
   const {
     filteredBerries,
@@ -74,8 +81,7 @@ function App() {
     selectedDonuts,
     handleDonutToggle,
     slots,
-    setSlots,
-  } = useDonutSelection(search.slots)
+  } = useDonutSelection(search.slots, handleSlotsChange)
 
   const {
     recipeRows,
@@ -135,7 +141,7 @@ function App() {
           selectedDonuts={selectedDonuts}
           onDonutToggle={handleDonutToggle}
           slots={slots}
-          onSlotsChange={setSlots}
+          onSlotsChange={handleSlotsChange}
         />
       )}
 

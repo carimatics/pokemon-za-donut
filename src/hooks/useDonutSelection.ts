@@ -3,7 +3,10 @@ import { usePersistedState } from './usePersistedState'
 import { serializeSet, deserializeSet } from '@/lib/serialization'
 import { STORAGE_KEYS, DEFAULT_VALUES } from '@/lib/constants'
 
-export function useDonutSelection(urlSlots?: number) {
+export function useDonutSelection(
+  urlSlots?: number,
+  onSlotsChange?: (slots: number) => void
+) {
   const [selectedDonuts, setSelectedDonuts] = usePersistedState<Set<string>>(
     STORAGE_KEYS.SELECTED_DONUTS,
     new Set(),
@@ -35,10 +38,16 @@ export function useDonutSelection(urlSlots?: number) {
     })
   }, [setSelectedDonuts])
 
+  // Wrapper for slots change that updates both localStorage and URL
+  const handleSlotsChange = useCallback((newSlots: number) => {
+    setSlots(newSlots)
+    onSlotsChange?.(newSlots)
+  }, [setSlots, onSlotsChange])
+
   return {
     selectedDonuts,
     handleDonutToggle,
     slots,
-    setSlots,
+    setSlots: handleSlotsChange,
   }
 }
