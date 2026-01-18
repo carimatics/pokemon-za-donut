@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-table'
 import type { Berry } from '@/lib/types'
 import { berryStocksToCSV, csvToBerryStocks } from '@/lib/csv'
+import { BerryStockInput } from './BerryStockInput'
 
 interface BerryStockTableProps {
   filteredBerries: Berry[]
@@ -54,6 +55,7 @@ export function BerryStockTable({
   }
 
   // Define columns for react-table
+  // Optimized: Only depends on onStockChange, not berryStocks
   const columns = useMemo<ColumnDef<Berry>[]>(
     () => [
       {
@@ -112,19 +114,16 @@ export function BerryStockTable({
         cell: info => {
           const berry = info.row.original
           return (
-            <input
-              type="number"
-              min="0"
+            <BerryStockInput
+              berry={berry}
               value={berryStocks[berry.id] || 0}
-              onChange={(e) => onStockChange(berry.id, parseInt(e.target.value, 10) || 0)}
-              className="border rounded px-2 py-1 w-20"
-              aria-label={`${berry.name}の個数`}
+              onChange={onStockChange}
             />
           )
         },
       },
     ],
-    [berryStocks, onStockChange]
+    [onStockChange]
   )
 
   // Create berry table instance

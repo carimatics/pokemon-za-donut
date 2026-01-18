@@ -8,6 +8,7 @@ import {
 import { donuts } from '@/data/donuts'
 import type { Donut } from '@/lib/types'
 import { GuideCard } from './GuideCard'
+import { DonutCheckbox } from './DonutCheckbox'
 
 interface DonutSelectionTableProps {
   selectedDonuts: Set<string>
@@ -31,12 +32,10 @@ export function DonutSelectionTable({
         cell: info => {
           const donut = info.row.original
           return (
-            <input
-              type="checkbox"
+            <DonutCheckbox
+              donut={donut}
               checked={selectedDonuts.has(donut.id)}
-              onChange={() => onDonutToggle(donut.id)}
-              className="w-4 h-4"
-              aria-label={`${donut.name}を選択`}
+              onToggle={onDonutToggle}
             />
           )
         },
@@ -72,7 +71,7 @@ export function DonutSelectionTable({
         cell: info => info.row.original.flavors.fresh,
       },
     ],
-    [selectedDonuts, onDonutToggle]
+    [onDonutToggle, selectedDonuts]
   )
 
   // Create donut table instance

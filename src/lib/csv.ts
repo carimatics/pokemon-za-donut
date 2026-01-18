@@ -35,7 +35,7 @@ export function csvToBerryStocks(csv: string): Record<string, number> {
       if (!berryId) continue
 
       const count = parseInt(countStr, 10)
-      if (!isNaN(count) && count >= 0) {
+      if (!Number.isNaN(count) && count >= 0) {
         berryStocks[berryId] = count
       }
     }
