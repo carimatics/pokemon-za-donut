@@ -14,11 +14,15 @@ class MockWorker {
     this.url = url
   }
 
-  postMessage(_data: unknown) {
+  postMessage(data: unknown) {
     // Simulate async worker processing
     setTimeout(() => {
       const messageListeners = this.listeners.get('message') || new Set()
-      const response = (globalThis as any).__mockWorkerResponse as WorkerResponse
+      const request = data as { requestId: string }
+      const mockResponse = (globalThis as any).__mockWorkerResponse as WorkerResponse
+
+      // Include requestId in response
+      const response = { ...mockResponse, requestId: request.requestId }
 
       const event = new MessageEvent('message', { data: response })
 
@@ -127,8 +131,9 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    // Set up mock worker response
+    // Set up mock worker response (requestId will be added by MockWorker)
     ;(globalThis as any).__mockWorkerResponse = {
+      requestId: '', // Will be overwritten by MockWorker
       success: true,
       result: {
         recipes: [mockRecipe],
@@ -218,8 +223,9 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    // Set up mock worker response with limit reached
+    // Set up mock worker response with limit reached (requestId will be added by MockWorker)
     ;(globalThis as any).__mockWorkerResponse = {
+      requestId: '', // Will be overwritten by MockWorker
       success: true,
       result: {
         recipes: [mockRecipe],
@@ -265,8 +271,9 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    // Set up mock worker response
+    // Set up mock worker response (requestId will be added by MockWorker)
     ;(globalThis as any).__mockWorkerResponse = {
+      requestId: '', // Will be overwritten by MockWorker
       success: true,
       result: {
         recipes: [mockRecipe],
@@ -386,8 +393,9 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    // Set up mock worker response with limit reached
+    // Set up mock worker response with limit reached (requestId will be added by MockWorker)
     ;(globalThis as any).__mockWorkerResponse = {
+      requestId: '', // Will be overwritten by MockWorker
       success: true,
       result: {
         recipes: [mockRecipe],
@@ -432,8 +440,9 @@ describe('useRecipeFinder', () => {
       ],
     }
 
-    // Set up mock worker response
+    // Set up mock worker response (requestId will be added by MockWorker)
     ;(globalThis as any).__mockWorkerResponse = {
+      requestId: '', // Will be overwritten by MockWorker
       success: true,
       result: {
         recipes: [mockRecipe],

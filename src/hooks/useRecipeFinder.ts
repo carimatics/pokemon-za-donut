@@ -66,6 +66,9 @@ export function useRecipeFinder() {
         const donut = donuts.find(d => d.id === donutId)
         if (!donut) return
 
+        // Generate unique request ID
+        const requestId = `${donutId}-${Date.now()}-${Math.random()}`
+
         // Use Web Worker for heavy computation
         const result = await new Promise<{ recipes: DonutRecipe[]; limitReached: boolean }>((resolve, reject) => {
           if (!workerRef.current) {
@@ -73,9 +76,14 @@ export function useRecipeFinder() {
             return
           }
 
-          const request: WorkerRequest = { donut, stocks, slots }
+          const request: WorkerRequest = { requestId, donut, stocks, slots }
 
           const handleMessage = (e: MessageEvent<WorkerResponse>) => {
+            // Only handle response for this specific request
+            if (e.data.requestId !== requestId) {
+              return
+            }
+
             if (e.data.success && e.data.result) {
               resolve({
                 recipes: e.data.result.recipes,
