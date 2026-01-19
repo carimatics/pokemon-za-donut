@@ -15,6 +15,7 @@ import { RecipeResultsHeader } from './RecipeResultsTable/RecipeResultsHeader'
 import { RecipeResultsSummary } from './RecipeResultsTable/RecipeResultsSummary'
 import { RecipeSearchConditions } from './RecipeResultsTable/RecipeSearchConditions'
 import { RecipeEmptyState } from './RecipeResultsTable/RecipeEmptyState'
+import { donuts } from '@/data/donuts'
 
 interface RecipeResultsTableProps {
   recipeRows: RecipeRow[]
@@ -38,9 +39,31 @@ export function RecipeResultsTable({
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const cardContainerRef = useRef<HTMLDivElement>(null)
 
+  // Create donut order map for sorting (matches donut selection table order)
+  const donutOrderMap = useMemo(() => {
+    const map = new Map<string, number>()
+    donuts.forEach((donut, index) => {
+      map.set(donut.name, index)
+    })
+    return map
+  }, [])
+
+  // Sort recipe rows by donut order (matches donut selection table)
+  const sortedRecipeRows = useMemo(() => {
+    return [...recipeRows].sort((a, b) => {
+      const orderA = donutOrderMap.get(a.donutName) ?? 999
+      const orderB = donutOrderMap.get(b.donutName) ?? 999
+      if (orderA !== orderB) {
+        return orderA - orderB
+      }
+      // If same donut, sort by recipe index
+      return a.recipeIndex - b.recipeIndex
+    })
+  }, [recipeRows, donutOrderMap])
+
   // Handle CSV download
   const handleDownloadCSV = () => {
-    const csv = recipeRowsToCSV(recipeRows)
+    const csv = recipeRowsToCSV(sortedRecipeRows)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
     downloadCSV(csv, `pokemon-za-recipes-${timestamp}.csv`)
   }
@@ -135,7 +158,7 @@ export function RecipeResultsTable({
 
   // Create recipe table instance with sorting
   const table = useReactTable({
-    data: recipeRows,
+    data: sortedRecipeRows,
     columns,
     state: {
       sorting,
@@ -159,7 +182,7 @@ export function RecipeResultsTable({
 
   // Virtualizer for mobile card view with dynamic measurement
   const cardVirtualizer = useVirtualizer({
-    count: recipeRows.length,
+    count: sortedRecipeRows.length,
     getScrollElement: () => cardContainerRef.current,
     estimateSize: () => 280, // Estimated card height in pixels
     measureElement: (element) => element.getBoundingClientRect().height, // Measure actual height
@@ -175,21 +198,21 @@ export function RecipeResultsTable({
       aria-labelledby="results-tab"
     >
       <RecipeResultsHeader
-        hasResults={recipeRows.length > 0}
+        hasResults={sortedRecipeRows.length > 0}
         onDownloadCSV={handleDownloadCSV}
       />
 
       <RecipeResultsSummary
-        resultCount={recipeRows.length}
+        resultCount={sortedRecipeRows.length}
         searchTime={searchTime}
       />
 
       <RecipeSearchConditions
         conditions={searchConditions}
-        hasResults={recipeRows.length > 0}
+        hasResults={sortedRecipeRows.length > 0}
       />
 
-      {recipeRows.length === 0 ? (
+      {sortedRecipeRows.length === 0 ? (
         <RecipeEmptyState
           hasSelectedDonuts={
             searchConditions !== undefined &&
@@ -211,7 +234,7 @@ export function RecipeResultsTable({
             }}
           >
             {cardVirtualizer.getVirtualItems().map((virtualItem) => {
-              const recipe = recipeRows[virtualItem.index]
+              const recipe = sortedRecipeRows[virtualItem.index]
               return (
                 <div
                   key={virtualItem.key}

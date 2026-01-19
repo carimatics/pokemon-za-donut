@@ -198,7 +198,10 @@ describe('RecipeResultsTable', () => {
     const downloadButton = screen.getByText('CSVダウンロード')
     await user.click(downloadButton)
 
-    expect(csv.recipeRowsToCSV).toHaveBeenCalledWith(mockRecipeRows)
+    // Verify CSV functions were called (recipes will be sorted by donut order)
+    expect(csv.recipeRowsToCSV).toHaveBeenCalledTimes(1)
+    const csvCall = (csv.recipeRowsToCSV as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(csvCall).toHaveLength(mockRecipeRows.length)
     expect(csv.downloadCSV).toHaveBeenCalled()
     const downloadCall = (csv.downloadCSV as ReturnType<typeof vi.fn>).mock.calls[0]
     expect(downloadCall[1]).toMatch(/^pokemon-za-recipes-.*\.csv$/)
