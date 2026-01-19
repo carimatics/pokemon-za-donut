@@ -10,6 +10,10 @@ import {
 import type { RecipeRow } from '@/lib/types'
 import { recipeRowsToCSV, downloadCSV } from '@/lib/csv'
 import { useIsMobile } from '@/hooks/useMediaQuery'
+import { RecipeResultsHeader } from './RecipeResultsTable/RecipeResultsHeader'
+import { RecipeResultsSummary } from './RecipeResultsTable/RecipeResultsSummary'
+import { RecipeSearchConditions } from './RecipeResultsTable/RecipeSearchConditions'
+import { RecipeEmptyState } from './RecipeResultsTable/RecipeEmptyState'
 
 interface RecipeResultsTableProps {
   recipeRows: RecipeRow[]
@@ -131,67 +135,28 @@ export function RecipeResultsTable({
       id="results-panel"
       aria-labelledby="results-tab"
     >
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">レシピ検索結果</h2>
-        {recipeRows.length > 0 && (
-          <button
-            type="button"
-            onClick={handleDownloadCSV}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
-            title="レシピをCSVファイルとしてダウンロード"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <title>ダウンロード</title>
-              <path
-                fillRule="evenodd"
-                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            CSVダウンロード
-          </button>
-        )}
-      </div>
+      <RecipeResultsHeader
+        hasResults={recipeRows.length > 0}
+        onDownloadCSV={handleDownloadCSV}
+      />
 
-      {/* Search Results Summary */}
-      {recipeRows.length > 0 && searchTime !== null && searchTime !== undefined && (
-        <div className="text-sm text-gray-600">
-          <span className="font-medium">{recipeRows.length.toLocaleString()}</span> 件の結果を
-          <span className="font-medium"> {searchTime.toFixed(3)}</span> 秒で計算しました
-        </div>
-      )}
+      <RecipeResultsSummary
+        resultCount={recipeRows.length}
+        searchTime={searchTime}
+      />
 
-      {/* Search Conditions Display */}
-      {searchConditions && recipeRows.length > 0 && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm">
-          <h3 className="font-semibold text-gray-700 mb-2">検索条件</h3>
-          <div className="space-y-1 text-gray-600">
-            <div>
-              <span className="font-medium">選択ドーナツ:</span>{' '}
-              {searchConditions.selectedDonuts.join('、')}
-            </div>
-            <div>
-              <span className="font-medium">スロット数:</span> {searchConditions.slots}
-            </div>
-            <div>
-              <span className="font-medium">使用可能きのみ:</span> {searchConditions.berryCount}種類
-            </div>
-          </div>
-        </div>
-      )}
+      <RecipeSearchConditions
+        conditions={searchConditions}
+        hasResults={recipeRows.length > 0}
+      />
 
       {recipeRows.length === 0 ? (
-        <p className="text-gray-500">
-          {searchConditions && searchConditions.selectedDonuts.length > 0
-            ? '選択されたドーナツに対して、条件を満たすレシピが見つかりませんでした。'
-            : 'ドーナツ選択タブでドーナツを選択し、レシピを検索してください。'}
-        </p>
+        <RecipeEmptyState
+          hasSelectedDonuts={
+            searchConditions !== undefined &&
+            searchConditions.selectedDonuts.length > 0
+          }
+        />
       ) : isMobile ? (
         // Mobile: Card View
         <div className="space-y-3">

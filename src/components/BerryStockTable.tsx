@@ -11,7 +11,10 @@ import type { Berry } from '@/lib/types'
 import { berryStocksToCSV, csvToBerryStocks } from '@/lib/csv'
 import { BerryStockInput } from './BerryStockInput'
 import { useIsMobile } from '@/hooks/useMediaQuery'
-import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { BerryStockHeader } from './BerryStockTable/BerryStockHeader'
+import { BerryStockFilters } from './BerryStockTable/BerryStockFilters'
+import { BerryStockCSVPanel } from './BerryStockTable/BerryStockCSVPanel'
+import { ResetConfirmModal } from './BerryStockTable/ResetConfirmModal'
 
 interface BerryStockTableProps {
   filteredBerries: Berry[]
@@ -48,16 +51,8 @@ export function BerryStockTable({
   // Local search input state for IME support
   const [localSearchText, setLocalSearchText] = useState(searchText)
 
-  // Refs for focus management
-  const modalRef = useRef<HTMLDivElement>(null)
+  // Ref for focus management
   const resetButtonRef = useRef<HTMLButtonElement>(null)
-
-  // Focus trap for modal
-  useFocusTrap(modalRef, {
-    enabled: showResetModal,
-    onEscape: () => setShowResetModal(false),
-    returnFocusRef: resetButtonRef,
-  })
 
   // Sync local state with prop when it changes externally (e.g., from URL)
   useEffect(() => {
@@ -218,56 +213,20 @@ export function BerryStockTable({
       id="berries-panel"
       aria-labelledby="berries-tab"
     >
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">きのみ個数入力</h2>
-        <button
-          ref={resetButtonRef}
-          type="button"
-          onClick={() => setShowResetModal(true)}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-        >
-          すべてリセット
-        </button>
-      </div>
+      <BerryStockHeader
+        onResetClick={() => setShowResetModal(true)}
+        resetButtonRef={resetButtonRef}
+      />
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex gap-2 items-center">
-          <label className="font-medium" htmlFor="hyper-filter">
-            きのみ種別:
-          </label>
-          {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
-          <select
-            id="hyper-filter"
-            value={hyperFilter}
-            onChange={(e) => onHyperFilterChange(e.target.value as 'all' | 'true' | 'false')}
-            className="border rounded px-2 py-1"
-          >
-            <option value="all">すべて</option>
-            <option value="true">異次元のみ</option>
-            <option value="false">通常のみ</option>
-          </select>
-        </div>
-
-        <div className="flex gap-2 items-center flex-1">
-          <label className="font-medium" htmlFor="search-input">
-            Search:
-          </label>
-          {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
-          <input
-            id="search-input"
-            type="text"
-            value={localSearchText}
-            onChange={(e) => {
-              const newValue = e.target.value
-              setLocalSearchText(newValue)
-              onSearchTextChange(newValue)
-            }}
-            placeholder="Search by name or ID..."
-            className="border rounded px-3 py-1 flex-1 max-w-md"
-          />
-        </div>
-      </div>
+      <BerryStockFilters
+        hyperFilter={hyperFilter}
+        onHyperFilterChange={onHyperFilterChange}
+        searchText={localSearchText}
+        onSearchTextChange={(text) => {
+          setLocalSearchText(text)
+          onSearchTextChange(text)
+        }}
+      />
 
       {/* Berry Table/Cards */}
       {isMobile ? (
@@ -397,84 +356,19 @@ export function BerryStockTable({
         </div>
       )}
 
-      {/* CSV Import/Export */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <label htmlFor="csv-input" className="block font-medium">
-            CSV形式でインポート/エクスポート
-          </label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleExport}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors text-sm"
-              title="現在のテーブルの状態をCSVに出力"
-            >
-              エクスポート
-            </button>
-            <button
-              type="button"
-              onClick={handleImport}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors text-sm"
-              title="CSVの内容をテーブルに反映"
-            >
-              インポート
-            </button>
-          </div>
-        </div>
-        <p className="text-sm text-gray-600">
-          形式: <code className="bg-gray-100 px-1 rounded">berryId,count</code>
-        </p>
-        {/* biome-ignore lint/correctness/useUniqueElementIds: single instance per route */}
-        <textarea
-          id="csv-input"
-          value={csvText}
-          onChange={(e) => setCsvText(e.target.value)}
-          className="w-full border rounded px-3 py-2 font-mono text-sm min-h-[150px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="berryId,count&#10;oran-berry,10&#10;pecha-berry,5"
-          aria-label="CSV形式でのきのみ在庫データ"
-        />
-      </div>
+      <BerryStockCSVPanel
+        csvText={csvText}
+        onCsvTextChange={setCsvText}
+        onExport={handleExport}
+        onImport={handleImport}
+      />
 
-      {/* Reset Confirmation Modal */}
-      {showResetModal && (
-        // biome-ignore lint/a11y/useKeyWithClickEvents: Modal backdrop click is intentional
-        // biome-ignore lint/a11y/noStaticElementInteractions: Modal backdrop interaction
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setShowResetModal(false)}
-        >
-          <div
-            ref={modalRef}
-            className="bg-white rounded-lg p-6 max-w-md mx-4"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reset-modal-title"
-          >
-            <h3 id="reset-modal-title" className="text-lg font-semibold mb-4">確認</h3>
-            <p className="text-gray-700 mb-6">
-              すべてのきのみ個数を0にリセットします。この操作は取り消せません。よろしいですか？
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowResetModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmReset}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-              >
-                リセット
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ResetConfirmModal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onConfirm={handleConfirmReset}
+        returnFocusRef={resetButtonRef}
+      />
     </section>
   )
 }
