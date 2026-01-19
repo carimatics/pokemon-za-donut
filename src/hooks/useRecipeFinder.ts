@@ -1,9 +1,12 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { berries } from '@/data/berries'
 import { donuts } from '@/data/donuts'
 import type { BerryStock, DonutRecipe, RecipeRow } from '@/lib/types'
 import { DEFAULT_VALUES } from '@/lib/constants'
-import type { WorkerRequest, WorkerResponse } from '@/workers/finder.worker'
+import { EnhancedRecipeFinder } from '@/lib/enhanced-finder'
+
+// Create a singleton instance of the finder
+const finder = new EnhancedRecipeFinder()
 
 export function useRecipeFinder() {
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
@@ -11,21 +14,6 @@ export function useRecipeFinder() {
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [searchTime, setSearchTime] = useState<number | null>(null)
-
-  // Web Worker reference
-  const workerRef = useRef<Worker | null>(null)
-
-  // Initialize Web Worker
-  useEffect(() => {
-    workerRef.current = new Worker(
-      new URL('../workers/finder.worker.ts', import.meta.url),
-      { type: 'module' }
-    )
-
-    return () => {
-      workerRef.current?.terminate()
-    }
-  }, [])
 
   const handleFindRecipes = useCallback(async (
     selectedDonuts: Set<string>,
@@ -57,47 +45,17 @@ export function useRecipeFinder() {
         throw new Error('ドーナツが選択されていません。\n\n解決方法：\n• 「ドーナツ選択」タブで作りたいドーナツをチェックしてください')
       }
 
-      // Process recipes using Web Worker
+      // Process recipes using EnhancedRecipeFinder
       const recipesMap = new Map<string, DonutRecipe[]>()
       const limitReachedDonuts: string[] = []
 
-      // Find recipes for each selected donut using Web Worker
+      // Find recipes for each selected donut
       const promises = Array.from(selectedDonuts).map(async (donutId) => {
         const donut = donuts.find(d => d.id === donutId)
         if (!donut) return
 
-        // Generate unique request ID
-        const requestId = `${donutId}-${Date.now()}-${Math.random()}`
-
-        // Use Web Worker for heavy computation
-        const result = await new Promise<{ recipes: DonutRecipe[]; limitReached: boolean }>((resolve, reject) => {
-          if (!workerRef.current) {
-            reject(new Error('Web Worker is not initialized'))
-            return
-          }
-
-          const request: WorkerRequest = { requestId, donut, stocks, slots }
-
-          const handleMessage = (e: MessageEvent<WorkerResponse>) => {
-            // Only handle response for this specific request
-            if (e.data.requestId !== requestId) {
-              return
-            }
-
-            if (e.data.success && e.data.result) {
-              resolve({
-                recipes: e.data.result.recipes,
-                limitReached: e.data.result.limitReached,
-              })
-            } else {
-              reject(new Error(e.data.error || 'Worker error'))
-            }
-            workerRef.current?.removeEventListener('message', handleMessage)
-          }
-
-          workerRef.current.addEventListener('message', handleMessage)
-          workerRef.current.postMessage(request)
-        })
+        // Use EnhancedRecipeFinder for parallel or single-threaded computation
+        const result = await finder.findRecipes(donut, stocks, slots)
 
         recipesMap.set(donutId, result.recipes)
 
@@ -126,7 +84,7 @@ export function useRecipeFinder() {
     } finally {
       setIsSearching(false)
     }
-  }, [workerRef])
+  }, [])
 
   // Flatten recipes for table display
   const recipeRows = useMemo<RecipeRow[]>(() => {

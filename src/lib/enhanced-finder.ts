@@ -1,84 +1,45 @@
 /**
- * Enhanced Recipe Finder with GPU Acceleration Support
+ * Enhanced Recipe Finder with Parallel Processing Support
  *
  * This module provides a unified interface for recipe finding that automatically
- * chooses between GPU and CPU implementations based on:
- * 1. GPU availability
- * 2. Dataset size
- * 3. Performance characteristics
+ * chooses between parallel (Web Workers) and single-threaded implementations based on:
+ * 1. Dataset size
+ * 2. Available CPU cores
+ * 3. Browser support for Web Workers
  *
- * It gracefully falls back to CPU when GPU is unavailable or encounters errors.
+ * It gracefully falls back to single-threaded CPU when parallel execution is not beneficial.
  */
 
 import type { BerryStock, Donut } from '@/lib/types'
 import { findRequiredCombinations, type FindRecipesResult } from '@/lib/finder'
-import { isTypeGPUSupported } from '@/lib/gpu/tgpu-context'
-import { TypeGPURecipeFinder } from '@/lib/gpu/tgpu-finder'
+import { ParallelRecipeFinder } from '@/lib/parallel-finder'
 
-// Thresholds for GPU acceleration
-const GPU_MIN_BERRY_COUNT = 15 // Minimum number of berries to use GPU
-const GPU_MIN_SLOTS = 4 // Minimum number of slots to use GPU
+// Thresholds for parallel execution
+const PARALLEL_MIN_BERRY_COUNT = 3 // Minimum number of berries to use parallel
+const PARALLEL_MIN_SLOTS = 4 // Minimum number of slots to use parallel
 
 export interface FinderOptions {
-  forceGPU?: boolean // Force GPU usage even if below thresholds
-  forceCPU?: boolean // Force CPU usage even if GPU is available
-  gpuBatchSize?: number // Batch size for GPU processing (default: 10000)
+  forceParallel?: boolean // Force parallel execution even if below thresholds
+  forceSingleThread?: boolean // Force single-threaded execution even if parallel is available
+  maxWorkers?: number // Maximum number of workers (default: navigator.hardwareConcurrency)
 }
 
 /**
- * Enhanced recipe finder with automatic GPU/CPU selection
+ * Enhanced recipe finder with automatic parallel/single-threaded selection
  *
  * This class provides a high-level interface that automatically selects
- * the best implementation (GPU or CPU) based on the current environment
- * and dataset characteristics.
- *
- * Uses TypeGPU for type-safe GPU acceleration.
+ * the best implementation (parallel or single-threaded) based on the current
+ * environment and dataset characteristics.
  */
 export class EnhancedRecipeFinder {
-  private gpuFinder: TypeGPURecipeFinder | null = null
-  private gpuAvailable = false
-  private gpuInitialized = false
-  private initializationError: Error | null = null
+  private parallelFinder: ParallelRecipeFinder
 
-  /**
-   * Initialize the finder and detect GPU support
-   *
-   * This method is optional - if not called, initialization will happen
-   * automatically on first use. However, calling it explicitly allows
-   * you to handle initialization errors upfront.
-   */
-  async initialize(): Promise<void> {
-    if (this.gpuInitialized) {
-      return
-    }
-
-    try {
-      // Check TypeGPU support
-      const typeGPUSupported = await isTypeGPUSupported()
-
-      // Initialize TypeGPU if supported
-      if (typeGPUSupported) {
-        this.gpuFinder = new TypeGPURecipeFinder()
-        await this.gpuFinder.initialize()
-        this.gpuAvailable = true
-        console.log('[EnhancedRecipeFinder] TypeGPU acceleration enabled')
-      } else {
-        console.log('[EnhancedRecipeFinder] TypeGPU not available, using CPU only')
-        this.gpuAvailable = false
-      }
-
-      this.gpuInitialized = true
-    } catch (error) {
-      console.error('[EnhancedRecipeFinder] GPU initialization failed:', error)
-      this.initializationError = error as Error
-      this.gpuAvailable = false
-      this.gpuFinder = null
-      this.gpuInitialized = true
-    }
+  constructor() {
+    this.parallelFinder = new ParallelRecipeFinder()
   }
 
   /**
-   * Find recipes using the best available method (GPU or CPU)
+   * Find recipes using the best available method (parallel or single-threaded)
    *
    * @param required - Target donut with required flavors
    * @param stocks - Available berry stocks
@@ -92,146 +53,100 @@ export class EnhancedRecipeFinder {
     slots: number,
     options: FinderOptions = {},
   ): Promise<FindRecipesResult> {
-    // Initialize if not already done
-    if (!this.gpuInitialized) {
-      await this.initialize()
-    }
+    // Determine whether to use parallel execution
+    const shouldUseParallel = this.shouldUseParallel(stocks, slots, options)
 
-    // Determine whether to use GPU
-    const shouldUseGPU = this.shouldUseGPU(stocks, slots, options)
-
-    if (shouldUseGPU && this.gpuFinder) {
+    if (shouldUseParallel) {
       try {
-        console.log('[EnhancedRecipeFinder] Using GPU acceleration (TypeGPU)')
+        console.log('[EnhancedRecipeFinder] Using parallel execution with Web Workers')
         const startTime = performance.now()
 
-        const result = await this.gpuFinder.findRecipes(
-          required,
-          stocks,
-          slots,
-          options.gpuBatchSize || 10000,
-        )
+        const parallelResult = await this.parallelFinder.findRecipes(required, stocks, slots)
 
         const endTime = performance.now()
-        console.log(`[EnhancedRecipeFinder] GPU processing took ${(endTime - startTime).toFixed(2)}ms`)
+        console.log(`[EnhancedRecipeFinder] Parallel processing took ${(endTime - startTime).toFixed(2)}ms`)
+        console.log(`[EnhancedRecipeFinder] Found ${parallelResult.recipes.length} recipes`)
 
-        return result
+        return parallelResult
       } catch (error) {
-        console.error('[EnhancedRecipeFinder] GPU processing failed, falling back to CPU:', error)
-        // Fall through to CPU implementation
+        console.error('[EnhancedRecipeFinder] Parallel processing failed, falling back to single-threaded:', error)
+        // Fall through to single-threaded implementation
       }
     }
 
-    // Use CPU implementation
-    console.log('[EnhancedRecipeFinder] Using CPU processing')
+    // Use single-threaded CPU implementation
+    console.log('[EnhancedRecipeFinder] Using single-threaded CPU processing')
     const startTime = performance.now()
 
     const result = findRequiredCombinations(required, stocks, slots)
 
     const endTime = performance.now()
     console.log(`[EnhancedRecipeFinder] CPU processing took ${(endTime - startTime).toFixed(2)}ms`)
+    console.log(`[EnhancedRecipeFinder] CPU found ${result.recipes.length} recipes`)
 
     return result
   }
 
   /**
-   * Determine whether GPU acceleration should be used
+   * Determine whether parallel execution should be used
    *
    * This method considers:
-   * - User preferences (forceGPU/forceCPU)
-   * - GPU availability
-   * - Dataset size (larger datasets benefit more from GPU)
+   * - User preferences (forceParallel/forceSingleThread)
+   * - Web Worker availability
+   * - Dataset size (larger datasets benefit more from parallel execution)
    */
-  private shouldUseGPU(stocks: BerryStock[], slots: number, options: FinderOptions): boolean {
-    // Forced CPU mode
-    if (options.forceCPU) {
+  private shouldUseParallel(stocks: BerryStock[], slots: number, options: FinderOptions): boolean {
+    // Forced single-threaded mode
+    if (options.forceSingleThread) {
       return false
     }
 
-    // GPU not available or not initialized
-    if (!this.gpuAvailable || !this.gpuFinder) {
+    // Check if Web Workers are available
+    if (typeof Worker === 'undefined') {
+      console.log('[EnhancedRecipeFinder] Web Workers not available')
       return false
     }
 
-    // Forced GPU mode
-    if (options.forceGPU) {
+    // Forced parallel mode
+    if (options.forceParallel) {
       return true
     }
 
-    // Check if dataset is large enough to benefit from GPU
-    const hasEnoughBerries = stocks.length >= GPU_MIN_BERRY_COUNT
-    const hasEnoughSlots = slots >= GPU_MIN_SLOTS
+    // Check if dataset is large enough to benefit from parallel execution
+    const hasEnoughBerries = stocks.length >= PARALLEL_MIN_BERRY_COUNT
+    const hasEnoughSlots = slots >= PARALLEL_MIN_SLOTS
 
     return hasEnoughBerries && hasEnoughSlots
   }
 
   /**
-   * Check if GPU acceleration is available
+   * Check if parallel execution is available
    */
-  isGPUAvailable(): boolean {
-    return this.gpuAvailable && this.gpuFinder !== null
-  }
-
-  /**
-   * Get GPU initialization error if any
-   */
-  getInitializationError(): Error | null {
-    return this.initializationError
+  isParallelAvailable(): boolean {
+    return typeof Worker !== 'undefined'
   }
 
   /**
    * Get performance characteristics for the current environment
    */
-  async getPerformanceInfo(): Promise<{
-    gpuAvailable: boolean
-    gpuInitialized: boolean
+  getPerformanceInfo(): {
+    parallelAvailable: boolean
+    workerCount: number
     cpuAvailable: boolean
-    error: string | null
-  }> {
-    if (!this.gpuInitialized) {
-      await this.initialize()
-    }
-
+  } {
     return {
-      gpuAvailable: this.gpuAvailable,
-      gpuInitialized: this.gpuInitialized,
+      parallelAvailable: this.isParallelAvailable(),
+      workerCount: navigator.hardwareConcurrency || 4,
       cpuAvailable: true,
-      error: this.initializationError?.message || null,
     }
-  }
-
-  /**
-   * Clean up GPU resources
-   *
-   * Call this when you're done using the finder to release GPU resources.
-   */
-  destroy(): void {
-    if (this.gpuFinder) {
-      this.gpuFinder.destroy()
-      this.gpuFinder = null
-      console.log('[EnhancedRecipeFinder] GPU resources cleaned up')
-    }
-    this.gpuAvailable = false
-    this.gpuInitialized = false
-    this.initializationError = null
   }
 }
 
 /**
  * Create a new EnhancedRecipeFinder instance
  *
- * This is a convenience function for creating and optionally initializing
- * an EnhancedRecipeFinder instance.
- *
- * @param autoInitialize - If true, initialize GPU support immediately (default: true)
  * @returns A new EnhancedRecipeFinder instance
  */
-export async function createEnhancedFinder(autoInitialize = true): Promise<EnhancedRecipeFinder> {
-  const finder = new EnhancedRecipeFinder()
-
-  if (autoInitialize) {
-    await finder.initialize()
-  }
-
-  return finder
+export function createEnhancedFinder(): EnhancedRecipeFinder {
+  return new EnhancedRecipeFinder()
 }
