@@ -15,8 +15,9 @@ import { findRequiredCombinations, type FindRecipesResult } from '@/lib/finder'
 import { ParallelRecipeFinder } from '@/lib/parallel-finder'
 
 // Thresholds for parallel execution
-const PARALLEL_MIN_BERRY_COUNT = 3 // Minimum number of berries to use parallel
-const PARALLEL_MIN_SLOTS = 4 // Minimum number of slots to use parallel
+// Higher thresholds to reduce memory overhead - parallel execution only beneficial for very large datasets
+const PARALLEL_MIN_BERRY_COUNT = 15 // Minimum number of berries to use parallel
+const PARALLEL_MIN_SLOTS = 6 // Minimum number of slots to use parallel
 
 export interface FinderOptions {
   forceParallel?: boolean // Force parallel execution even if below thresholds

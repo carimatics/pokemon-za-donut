@@ -27,7 +27,10 @@ export class ParallelRecipeFinder {
   private maxSolutionsPerWorker: number
 
   constructor(options: ParallelFinderOptions = {}) {
-    this.maxWorkers = options.maxWorkers || navigator.hardwareConcurrency || 4
+    // Limit max workers to reduce memory overhead
+    // Most benefits achieved with 4 workers, diminishing returns beyond that
+    const defaultMaxWorkers = Math.min(navigator.hardwareConcurrency || 4, 4)
+    this.maxWorkers = options.maxWorkers || defaultMaxWorkers
     this.maxSolutionsPerWorker = options.maxSolutionsPerWorker || 10000
 
     console.log(`[ParallelRecipeFinder] Initialized with ${this.maxWorkers} workers`)
@@ -64,31 +67,18 @@ export class ParallelRecipeFinder {
       return result
     }
 
-    // Run tasks in parallel with worker pool
-    const results = await this.runParallel(tasks)
-
-    // Combine results from all workers
-    const allRecipes: DonutRecipe[] = []
-    let limitReached = false
-    let totalExplored = 0
-
-    for (const result of results) {
-      allRecipes.push(...result.recipes)
-      if (result.limitReached) {
-        limitReached = true
-      }
-      totalExplored += result.explored
-    }
+    // Run tasks in parallel with worker pool and aggregate results progressively
+    const aggregatedResult = await this.runParallel(tasks)
 
     const endTime = performance.now()
     console.log(
-      `[ParallelRecipeFinder] Completed in ${(endTime - startTime).toFixed(2)}ms, found ${allRecipes.length} recipes`,
+      `[ParallelRecipeFinder] Completed in ${(endTime - startTime).toFixed(2)}ms, found ${aggregatedResult.recipes.length} recipes`,
     )
-    console.log(`[ParallelRecipeFinder] Explored ${totalExplored} nodes across ${results.length} workers`)
+    console.log(`[ParallelRecipeFinder] Explored ${aggregatedResult.totalExplored} nodes across ${tasks.length} workers`)
 
     return {
-      recipes: allRecipes,
-      limitReached,
+      recipes: aggregatedResult.recipes,
+      limitReached: aggregatedResult.limitReached,
     }
   }
 
@@ -142,9 +132,18 @@ export class ParallelRecipeFinder {
 
   /**
    * Run tasks in parallel with worker pool
+   * Aggregates results progressively to reduce memory footprint
    */
-  private async runParallel(tasks: WorkerTask[]): Promise<WorkerResult[]> {
-    const results: WorkerResult[] = []
+  private async runParallel(tasks: WorkerTask[]): Promise<{
+    recipes: DonutRecipe[]
+    limitReached: boolean
+    totalExplored: number
+  }> {
+    // Aggregate results progressively instead of accumulating array
+    const allRecipes: DonutRecipe[] = []
+    let limitReached = false
+    let totalExplored = 0
+
     const workers: Worker[] = []
 
     // Create worker pool
@@ -204,7 +203,13 @@ export class ParallelRecipeFinder {
         }),
       )
 
-      results.push(completed.result)
+      // Aggregate result immediately and allow GC to clean up worker result
+      allRecipes.push(...completed.result.recipes)
+      if (completed.result.limitReached) {
+        limitReached = true
+      }
+      totalExplored += completed.result.explored
+
       pendingTasks.delete(completed.worker)
 
       // Assign next task to the freed worker
@@ -219,7 +224,11 @@ export class ParallelRecipeFinder {
       worker.terminate()
     }
 
-    return results
+    return {
+      recipes: allRecipes,
+      limitReached,
+      totalExplored,
+    }
   }
 
   /**
