@@ -53,6 +53,7 @@ const mockRecipeRows: RecipeRow[] = [
     donutName: 'プレーンドーナツ',
     recipeIndex: 1,
     berries: 'オレンのみ x5',
+    berryCount: 5,
     totalCalories: 100,
     totalLevel: 5,
     sweet: 50,
@@ -68,6 +69,7 @@ const mockRecipeRows: RecipeRow[] = [
     donutName: 'プレーンドーナツ',
     recipeIndex: 2,
     berries: 'モモンのみ x3, オレンのみ x2',
+    berryCount: 5,
     totalCalories: 120,
     totalLevel: 10,
     sweet: 20,
@@ -83,6 +85,7 @@ const mockRecipeRows: RecipeRow[] = [
     donutName: 'スイートドーナツ',
     recipeIndex: 1,
     berries: 'ナナのみ x10',
+    berryCount: 10,
     totalCalories: 1000,
     totalLevel: 100,
     sweet: 300,
@@ -330,17 +333,21 @@ describe('RecipeResultsTable', () => {
     expect(screen.getByText('60')).toBeInTheDocument() // fresh
   })
 
-  it('should display plus level and donut energy when stars > 0', () => {
+  it('should display plus level and donut energy in mobile view', () => {
     mockUseIsMobile.mockReturnValue(true)
 
-    render(<RecipeResultsTable recipeRows={mockRecipeRows} />)
+    const { container } = render(<RecipeResultsTable recipeRows={mockRecipeRows} />)
 
-    // Check mobile view displays plus level and energy (multiple cards may have these)
-    const plusLevelElements = screen.getAllByText('プラスレベル')
-    expect(plusLevelElements.length).toBeGreaterThan(0)
-
-    const haramochiElements = screen.getAllByText('ハラモチ')
-    expect(haramochiElements.length).toBeGreaterThan(0)
+    // Check mobile view displays plus level and donut energy values in header
+    const contentText = container.textContent || ''
+    // Plus level values (5, 11, 150)
+    expect(contentText).toContain('Lv.5')
+    expect(contentText).toContain('Lv.11')
+    expect(contentText).toContain('Lv.150')
+    // Donut energy values (100, 132, 1500)
+    expect(contentText).toContain('100')
+    expect(contentText).toContain('132')
+    expect(contentText).toContain('1500')
   })
 
   it('should format berries text correctly in mobile view', () => {

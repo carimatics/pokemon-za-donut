@@ -117,6 +117,9 @@ export function useRecipeFinder() {
           .map(stock => `${stock.berry.name} x${stock.count}`)
           .join(', ')
 
+        // Calculate total berry count
+        const berryCount = recipe.stocks.reduce((sum, stock) => sum + stock.count, 0)
+
         // Calculate total flavor sum
         const totalFlavorSum = totalFlavors.sweet + totalFlavors.spicy + totalFlavors.sour + totalFlavors.bitter + totalFlavors.fresh
 
@@ -139,6 +142,7 @@ export function useRecipeFinder() {
           donutName: donut.name,
           recipeIndex: index + 1,
           berries: berriesText,
+          berryCount,
           totalCalories,
           totalLevel,
           sweet: totalFlavors.sweet,

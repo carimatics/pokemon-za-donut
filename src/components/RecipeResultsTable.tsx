@@ -90,16 +90,31 @@ export function RecipeResultsTable({
         meta: { width: '350px' },
       },
       {
-        accessorKey: 'totalCalories',
-        header: '合計カロリー',
+        accessorKey: 'berryCount',
+        header: 'きのみ個数',
+        cell: info => info.getValue(),
+        meta: { width: '100px' },
+      },
+      {
+        accessorKey: 'stars',
+        header: '星',
+        cell: info => {
+          const stars = info.getValue() as number
+          return stars > 0 ? '★'.repeat(stars) : '-'
+        },
+        meta: { width: '100px' },
+      },
+      {
+        accessorKey: 'plusLevel',
+        header: 'プラスレベル',
         cell: info => info.getValue(),
         meta: { width: '120px' },
       },
       {
-        accessorKey: 'totalLevel',
-        header: '合計レベル',
+        accessorKey: 'donutEnergy',
+        header: 'ハラモチエネルギー',
         cell: info => info.getValue(),
-        meta: { width: '120px' },
+        meta: { width: '150px' },
       },
       {
         accessorKey: 'sweet',
@@ -132,25 +147,16 @@ export function RecipeResultsTable({
         meta: { width: '100px' },
       },
       {
-        accessorKey: 'stars',
-        header: '星',
-        cell: info => {
-          const stars = info.getValue() as number
-          return stars > 0 ? '★'.repeat(stars) : '-'
-        },
-        meta: { width: '100px' },
-      },
-      {
-        accessorKey: 'plusLevel',
-        header: 'プラスレベル',
+        accessorKey: 'totalLevel',
+        header: '合計レベル',
         cell: info => info.getValue(),
         meta: { width: '120px' },
       },
       {
-        accessorKey: 'donutEnergy',
-        header: 'ハラモチエネルギー',
+        accessorKey: 'totalCalories',
+        header: '合計カロリー',
         cell: info => info.getValue(),
-        meta: { width: '150px' },
+        meta: { width: '120px' },
       },
     ],
     []
@@ -252,20 +258,28 @@ export function RecipeResultsTable({
                   <div className="border border-gray-200 rounded-lg p-4 bg-white">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">{recipe.donutName}</h3>
+                        <h3 className="font-bold text-gray-900">{recipe.donutName}</h3>
                         <p className="text-sm text-gray-500">レシピ #{recipe.recipeIndex}</p>
                         {recipe.stars > 0 && (
                           <p className="text-yellow-500 text-lg mt-1">{'★'.repeat(recipe.stars)}</p>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-blue-600">{recipe.totalCalories}cal</p>
-                        <p className="text-xs text-gray-500">Lv.{recipe.totalLevel}</p>
+                      <div className="text-right text-gray-800">
+                        <p>
+                          <span className="text-xs">+Lv. </span>
+                          <span className="font-bold">{recipe.plusLevel}</span>
+                        </p>
+                        <p>
+                          <span className="text-sm font-medium">{recipe.donutEnergy}</span>
+                          <span className="text-xs"> kcal</span>
+                        </p>
                       </div>
                     </div>
                     <div className="mb-3">
                       <p className="text-xs font-medium text-gray-700 mb-1">使用きのみ:</p>
                       <p className="text-sm text-gray-600">{recipe.berries}</p>
+                      <p className="text-xs text-gray-500 mt-1">きのみ個数: {recipe.berryCount}個</p>
+                      <p className="text-xs text-gray-500">合計カロリー: {recipe.totalCalories}cal / 合計レベル: Lv.{recipe.totalLevel}</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div className="text-center p-2 bg-pink-50 rounded">
@@ -289,18 +303,6 @@ export function RecipeResultsTable({
                         <p className="font-medium">{recipe.fresh}</p>
                       </div>
                     </div>
-                    {recipe.stars > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-2 text-xs">
-                        <div className="text-center p-2 bg-purple-50 rounded">
-                          <p className="text-gray-600">プラスレベル</p>
-                          <p className="font-medium text-purple-700">{recipe.plusLevel}</p>
-                        </div>
-                        <div className="text-center p-2 bg-orange-50 rounded">
-                          <p className="text-gray-600">ハラモチ</p>
-                          <p className="font-medium text-orange-700">{recipe.donutEnergy}</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )

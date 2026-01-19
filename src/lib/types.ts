@@ -35,6 +35,7 @@ export interface RecipeRow {
   donutName: string;
   recipeIndex: number;
   berries: string;
+  berryCount: number;
   totalCalories: number;
   totalLevel: number;
   sweet: number;
