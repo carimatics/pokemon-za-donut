@@ -4,6 +4,7 @@ import { donuts } from '@/data/donuts'
 import type { BerryStock, DonutRecipe, RecipeRow } from '@/lib/types'
 import { DEFAULT_VALUES } from '@/lib/constants'
 import { EnhancedRecipeFinder } from '@/lib/enhanced-finder'
+import { toRecipeRows } from '@/lib/recipe-transformer'
 
 export function useRecipeFinder() {
   // Create finder instance using useRef to ensure single instance per hook usage
@@ -12,6 +13,9 @@ export function useRecipeFinder() {
     finderRef.current = new EnhancedRecipeFinder()
   }
   const finder = finderRef.current
+
+  // AbortController for search cancellation
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
   const [isSearching, setIsSearching] = useState(false)
@@ -24,6 +28,15 @@ export function useRecipeFinder() {
     berryStocks: Record<string, number>,
     slots: number
   ) => {
+    // Cancel any previous search
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new AbortController for this search
+    abortControllerRef.current = new AbortController()
+    const signal = abortControllerRef.current.signal
+
     setIsSearching(true)
     setError(null)
     setWarning(null)
@@ -32,6 +45,10 @@ export function useRecipeFinder() {
     const startTime = performance.now()
 
     try {
+      // Check if already aborted
+      if (signal.aborted) {
+        return
+      }
       // Build berry stocks array
       const stocks: BerryStock[] = berries
         .filter(berry => (berryStocks[berry.id] || 0) > 0)
@@ -49,17 +66,41 @@ export function useRecipeFinder() {
         throw new Error('ドーナツが選択されていません。\n\n解決方法：\n• 「ドーナツ選択」タブで作りたいドーナツをチェックしてください')
       }
 
+      // Edge case validations
+      if (slots < 1 || slots > 20) {
+        throw new Error('スロット数は1〜20の範囲で指定してください。')
+      }
+
+      const totalBerries = Object.values(berryStocks).reduce((sum, count) => sum + count, 0)
+      if (totalBerries > 9999) {
+        throw new Error('きのみの合計個数が多すぎます（上限: 9999個）。\n\n解決方法：\n• 「きのみ個数入力」タブで個数を減らしてください')
+      }
+
+      if (selectedDonuts.size > 50) {
+        setWarning('50個以上のドーナツが選択されています。処理に時間がかかる場合があります。')
+      }
+
       // Process recipes using EnhancedRecipeFinder
       const recipesMap = new Map<string, DonutRecipe[]>()
       const limitReachedDonuts: string[] = []
 
       // Find recipes for each selected donut
       const promises = Array.from(selectedDonuts).map(async (donutId) => {
+        // Check for cancellation before processing each donut
+        if (signal.aborted) {
+          throw new DOMException('Search cancelled', 'AbortError')
+        }
+
         const donut = donuts.find(d => d.id === donutId)
         if (!donut) return
 
         // Use EnhancedRecipeFinder for parallel or single-threaded computation
         const result = await finder.findRecipes(donut, stocks, slots)
+
+        // Check for cancellation after each donut completes
+        if (signal.aborted) {
+          throw new DOMException('Search cancelled', 'AbortError')
+        }
 
         recipesMap.set(donutId, result.recipes)
 
@@ -69,6 +110,11 @@ export function useRecipeFinder() {
       })
 
       await Promise.all(promises)
+
+      // Final cancellation check
+      if (signal.aborted) {
+        return
+      }
 
       // Set warning if any donut reached the limit
       if (limitReachedDonuts.length > 0) {
@@ -82,6 +128,12 @@ export function useRecipeFinder() {
       const endTime = performance.now()
       setSearchTime((endTime - startTime) / 1000) // Convert to seconds
     } catch (err) {
+      // Handle cancellation gracefully
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // Search was cancelled - don't set error
+        return
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'レシピの検索中にエラーが発生しました'
       setError(errorMessage)
       throw new Error(errorMessage)
@@ -90,83 +142,25 @@ export function useRecipeFinder() {
     }
   }, [finder])
 
-  // Flatten recipes for table display
-  const recipeRows = useMemo<RecipeRow[]>(() => {
-    const rows: RecipeRow[] = []
-    recipes.forEach((donutRecipes, donutId) => {
-      const donut = donuts.find(d => d.id === donutId)
-      if (!donut) return
+  // Transform recipes to table rows
+  const recipeRows = useMemo<RecipeRow[]>(
+    () => toRecipeRows(recipes),
+    [recipes]
+  )
 
-      donutRecipes.forEach((recipe, index) => {
-        const totalCalories = recipe.stocks.reduce(
-          (sum, stock) => sum + stock.berry.calories * stock.count,
-          0
-        )
-        const totalLevel = recipe.stocks.reduce(
-          (sum, stock) => sum + stock.berry.level * stock.count,
-          0
-        )
-        const totalFlavors = recipe.stocks.reduce(
-          (acc, stock) => ({
-            sweet: acc.sweet + stock.berry.flavors.sweet * stock.count,
-            spicy: acc.spicy + stock.berry.flavors.spicy * stock.count,
-            sour: acc.sour + stock.berry.flavors.sour * stock.count,
-            bitter: acc.bitter + stock.berry.flavors.bitter * stock.count,
-            fresh: acc.fresh + stock.berry.flavors.fresh * stock.count,
-          }),
-          { sweet: 0, spicy: 0, sour: 0, bitter: 0, fresh: 0 }
-        )
-
-        const berriesText = recipe.stocks
-          .map(stock => `${stock.berry.name} x${stock.count}`)
-          .join(', ')
-
-        // Calculate total berry count
-        const berryCount = recipe.stocks.reduce((sum, stock) => sum + stock.count, 0)
-
-        // Calculate total flavor sum
-        const totalFlavorSum = totalFlavors.sweet + totalFlavors.spicy + totalFlavors.sour + totalFlavors.bitter + totalFlavors.fresh
-
-        // Calculate stars based on total flavor sum
-        let stars = 0
-        if (totalFlavorSum >= 960) stars = 5
-        else if (totalFlavorSum >= 700) stars = 4
-        else if (totalFlavorSum >= 350) stars = 3
-        else if (totalFlavorSum >= 240) stars = 2
-        else if (totalFlavorSum >= 120) stars = 1
-
-        // Calculate boost multiplier (1 + 0.1 * stars)
-        const boostMultiplier = 1 + 0.1 * stars
-
-        // Calculate plus level and energy boost
-        const plusLevel = Math.floor(totalLevel * boostMultiplier)
-        const donutEnergy = Math.floor(totalCalories * boostMultiplier)
-
-        rows.push({
-          donutName: donut.name,
-          recipeIndex: index + 1,
-          berries: berriesText,
-          berryCount,
-          totalCalories,
-          totalLevel,
-          sweet: totalFlavors.sweet,
-          spicy: totalFlavors.spicy,
-          sour: totalFlavors.sour,
-          bitter: totalFlavors.bitter,
-          fresh: totalFlavors.fresh,
-          stars,
-          plusLevel,
-          donutEnergy,
-        })
-      })
-    })
-    return rows
-  }, [recipes])
+  // Cancel search function
+  const cancelSearch = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      setIsSearching(false)
+    }
+  }, [])
 
   return {
     recipes,
     recipeRows,
     handleFindRecipes,
+    cancelSearch,
     isSearching,
     error,
     clearError: () => setError(null),

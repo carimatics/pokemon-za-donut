@@ -72,7 +72,14 @@ export class EnhancedRecipeFinder {
 
         return parallelResult
       } catch (error) {
+        // Log detailed error information
         logger.error('Parallel processing failed, falling back to single-threaded:', error)
+
+        // Provide user-friendly error context
+        const errorDetails = error instanceof Error ? error.message : 'Unknown error'
+        logger.warn(`Error details: ${errorDetails}`)
+        logger.warn('Fallback: Using single-threaded CPU processing instead')
+
         // Fall through to single-threaded implementation
       }
     }

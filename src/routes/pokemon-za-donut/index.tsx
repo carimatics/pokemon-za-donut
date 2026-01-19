@@ -86,6 +86,7 @@ function App() {
   const {
     recipeRows,
     handleFindRecipes,
+    cancelSearch,
     isSearching,
     error,
     clearError,
@@ -172,6 +173,7 @@ function App() {
         disabled={selectedDonuts.size === 0}
         isLoading={isSearching}
         onClick={onFindRecipes}
+        onCancel={cancelSearch}
       />
 
       {/* Navigation Helper - Show when no donuts selected and not on donuts tab */}
