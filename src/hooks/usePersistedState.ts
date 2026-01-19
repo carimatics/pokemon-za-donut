@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('PersistedState')
 
 /**
  * Custom hook for persisting state to localStorage
@@ -19,7 +22,7 @@ export function usePersistedState<T>(
       const item = window.localStorage.getItem(key)
       return item ? deserialize(item) : initialValue
     } catch (error) {
-      console.warn(`Error loading "${key}" from localStorage:`, error)
+      logger.warn(`Error loading "${key}" from localStorage:`, error)
       return initialValue
     }
   })
@@ -29,7 +32,7 @@ export function usePersistedState<T>(
     try {
       window.localStorage.setItem(key, serialize(state))
     } catch (error) {
-      console.warn(`Error saving "${key}" to localStorage:`, error)
+      logger.warn(`Error saving "${key}" to localStorage:`, error)
     }
   }, [key, state, serialize])
 
@@ -39,7 +42,7 @@ export function usePersistedState<T>(
     try {
       window.localStorage.removeItem(key)
     } catch (error) {
-      console.warn(`Error removing "${key}" from localStorage:`, error)
+      logger.warn(`Error removing "${key}" from localStorage:`, error)
     }
   }, [key, initialValue])
 

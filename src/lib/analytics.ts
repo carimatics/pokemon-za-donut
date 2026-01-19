@@ -1,20 +1,13 @@
 import { onCLS, onFCP, onLCP, onTTFB, onINP, type Metric } from 'web-vitals'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Web Vitals')
 
 /**
  * Send Web Vitals metrics to analytics service
  * In production, this would send to your analytics platform (Google Analytics, Vercel Analytics, etc.)
  */
 function sendToAnalytics(metric: Metric) {
-  // Construct the metric payload
-  const body = {
-    name: metric.name,
-    value: metric.value,
-    rating: metric.rating,
-    delta: metric.delta,
-    id: metric.id,
-    navigationType: metric.navigationType,
-  }
-
   if (import.meta.env.PROD) {
     // In production, send to your analytics endpoint
     // Example: Google Analytics 4
@@ -26,19 +19,19 @@ function sendToAnalytics(metric: Metric) {
     //   metric_rating: metric.rating,
     // })
 
-    // Example: Custom analytics endpoint
+    // Example: Custom analytics endpoint with metric payload
+    // const body = {
+    //   name: metric.name,
+    //   value: metric.value,
+    //   rating: metric.rating,
+    //   delta: metric.delta,
+    //   id: metric.id,
+    //   navigationType: metric.navigationType,
+    // }
     // navigator.sendBeacon('/api/analytics', JSON.stringify(body))
-
-    // For now, log to console in production too
-    console.log('[Web Vitals]', body)
   } else {
     // Development environment - detailed console logging
-    console.group(`[Web Vitals] ${metric.name}`)
-    console.log('Value:', metric.value)
-    console.log('Rating:', metric.rating)
-    console.log('Delta:', metric.delta)
-    console.log('ID:', metric.id)
-    console.groupEnd()
+    logger.info(`${metric.name} - Value: ${metric.value}, Rating: ${metric.rating}, Delta: ${metric.delta}, ID: ${metric.id}`)
   }
 }
 
@@ -74,9 +67,9 @@ export function initWebVitals() {
     // Good: < 200ms, Needs improvement: 200-500ms, Poor: > 500ms
     onINP(sendToAnalytics)
 
-    console.log('[Web Vitals] Monitoring initialized')
+    logger.log('Monitoring initialized')
   } catch (error) {
-    console.error('[Web Vitals] Failed to initialize:', error)
+    logger.error('Failed to initialize:', error)
   }
 }
 

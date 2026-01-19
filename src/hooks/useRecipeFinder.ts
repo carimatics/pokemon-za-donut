@@ -1,14 +1,18 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { berries } from '@/data/berries'
 import { donuts } from '@/data/donuts'
 import type { BerryStock, DonutRecipe, RecipeRow } from '@/lib/types'
 import { DEFAULT_VALUES } from '@/lib/constants'
 import { EnhancedRecipeFinder } from '@/lib/enhanced-finder'
 
-// Create a singleton instance of the finder
-const finder = new EnhancedRecipeFinder()
-
 export function useRecipeFinder() {
+  // Create finder instance using useRef to ensure single instance per hook usage
+  const finderRef = useRef<EnhancedRecipeFinder>()
+  if (!finderRef.current) {
+    finderRef.current = new EnhancedRecipeFinder()
+  }
+  const finder = finderRef.current
+
   const [recipes, setRecipes] = useState<Map<string, DonutRecipe[]>>(new Map())
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -84,7 +88,7 @@ export function useRecipeFinder() {
     } finally {
       setIsSearching(false)
     }
-  }, [])
+  }, [finder])
 
   // Flatten recipes for table display
   const recipeRows = useMemo<RecipeRow[]>(() => {

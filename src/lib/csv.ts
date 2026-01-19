@@ -1,4 +1,7 @@
 import type { RecipeRow } from '@/lib/types'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('CSV')
 
 /**
  * Convert berry stocks to CSV format
@@ -40,7 +43,7 @@ export function csvToBerryStocks(csv: string): Record<string, number> {
       }
     }
   } catch (error) {
-    console.warn('Error parsing CSV:', error)
+    logger.warn('Error parsing CSV:', error)
   }
 
   return berryStocks

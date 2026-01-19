@@ -10,6 +10,9 @@ import type { BerryStock, Donut, DonutRecipe } from '@/lib/types'
 import type { FindRecipesResult } from '@/lib/finder'
 import type { WorkerTask, WorkerResult } from '@/lib/workers/finder.worker'
 import FinderWorker from '@/lib/workers/finder.worker?worker'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('ParallelRecipeFinder')
 
 export interface ParallelFinderOptions {
   maxWorkers?: number // Maximum number of workers to use (default: navigator.hardwareConcurrency)
@@ -33,7 +36,7 @@ export class ParallelRecipeFinder {
     this.maxWorkers = options.maxWorkers || defaultMaxWorkers
     this.maxSolutionsPerWorker = options.maxSolutionsPerWorker || 10000
 
-    console.log(`[ParallelRecipeFinder] Initialized with ${this.maxWorkers} workers`)
+    logger.log(`Initialized with ${this.maxWorkers} workers`)
   }
 
   /**
@@ -54,15 +57,15 @@ export class ParallelRecipeFinder {
     // Generate tasks by partitioning on the first berry's usage count
     const tasks = this.generateTasks(required, stocks, slots)
 
-    console.log(`[ParallelRecipeFinder] Generated ${tasks.length} tasks`)
+    logger.log(`Generated ${tasks.length} tasks`)
 
     // If tasks are few, just use single-threaded approach
     if (tasks.length === 1) {
-      console.log('[ParallelRecipeFinder] Single task, using one worker')
+      logger.log('Single task, using one worker')
       const result = await this.runSingleWorker(tasks[0])
       const endTime = performance.now()
-      console.log(
-        `[ParallelRecipeFinder] Completed in ${(endTime - startTime).toFixed(2)}ms, found ${result.recipes.length} recipes`,
+      logger.log(
+        `Completed in ${(endTime - startTime).toFixed(2)}ms, found ${result.recipes.length} recipes`,
       )
       return result
     }
@@ -71,10 +74,10 @@ export class ParallelRecipeFinder {
     const aggregatedResult = await this.runParallel(tasks)
 
     const endTime = performance.now()
-    console.log(
-      `[ParallelRecipeFinder] Completed in ${(endTime - startTime).toFixed(2)}ms, found ${aggregatedResult.recipes.length} recipes`,
+    logger.log(
+      `Completed in ${(endTime - startTime).toFixed(2)}ms, found ${aggregatedResult.recipes.length} recipes`,
     )
-    console.log(`[ParallelRecipeFinder] Explored ${aggregatedResult.totalExplored} nodes across ${tasks.length} workers`)
+    logger.log(`Explored ${aggregatedResult.totalExplored} nodes across ${tasks.length} workers`)
 
     return {
       recipes: aggregatedResult.recipes,
@@ -151,7 +154,7 @@ export class ParallelRecipeFinder {
       workers.push(new FinderWorker())
     }
 
-    console.log(`[ParallelRecipeFinder] Running ${tasks.length} tasks on ${workers.length} workers`)
+    logger.log(`Running ${tasks.length} tasks on ${workers.length} workers`)
 
     // Task queue
     let nextTaskIndex = 0

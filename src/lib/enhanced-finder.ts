@@ -13,6 +13,9 @@
 import type { BerryStock, Donut } from '@/lib/types'
 import { findRequiredCombinations, type FindRecipesResult } from '@/lib/finder'
 import { ParallelRecipeFinder } from '@/lib/parallel-finder'
+import { createLogger, createTimer } from '@/lib/logger'
+
+const logger = createLogger('EnhancedRecipeFinder')
 
 // Thresholds for parallel execution
 // Higher thresholds to reduce memory overhead - parallel execution only beneficial for very large datasets
@@ -59,31 +62,29 @@ export class EnhancedRecipeFinder {
 
     if (shouldUseParallel) {
       try {
-        console.log('[EnhancedRecipeFinder] Using parallel execution with Web Workers')
-        const startTime = performance.now()
+        logger.log('Using parallel execution with Web Workers')
+        const timer = createTimer('Parallel processing')
 
         const parallelResult = await this.parallelFinder.findRecipes(required, stocks, slots)
 
-        const endTime = performance.now()
-        console.log(`[EnhancedRecipeFinder] Parallel processing took ${(endTime - startTime).toFixed(2)}ms`)
-        console.log(`[EnhancedRecipeFinder] Found ${parallelResult.recipes.length} recipes`)
+        timer.end(logger)
+        logger.log(`Found ${parallelResult.recipes.length} recipes`)
 
         return parallelResult
       } catch (error) {
-        console.error('[EnhancedRecipeFinder] Parallel processing failed, falling back to single-threaded:', error)
+        logger.error('Parallel processing failed, falling back to single-threaded:', error)
         // Fall through to single-threaded implementation
       }
     }
 
     // Use single-threaded CPU implementation
-    console.log('[EnhancedRecipeFinder] Using single-threaded CPU processing')
-    const startTime = performance.now()
+    logger.log('Using single-threaded CPU processing')
+    const timer = createTimer('CPU processing')
 
     const result = findRequiredCombinations(required, stocks, slots)
 
-    const endTime = performance.now()
-    console.log(`[EnhancedRecipeFinder] CPU processing took ${(endTime - startTime).toFixed(2)}ms`)
-    console.log(`[EnhancedRecipeFinder] CPU found ${result.recipes.length} recipes`)
+    timer.end(logger)
+    logger.log(`CPU found ${result.recipes.length} recipes`)
 
     return result
   }
@@ -104,7 +105,7 @@ export class EnhancedRecipeFinder {
 
     // Check if Web Workers are available
     if (typeof Worker === 'undefined') {
-      console.log('[EnhancedRecipeFinder] Web Workers not available')
+      logger.log('Web Workers not available')
       return false
     }
 
