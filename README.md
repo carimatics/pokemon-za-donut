@@ -13,6 +13,7 @@ Pokémon LEGENDS Z-A DLC「M次元ラッシュ」のストーリー中に作成�
 - **ドーナツ選択**: 作りたいドーナツを選択
 - **きのみ在庫管理**: 所持しているきのみの個数を入力
 - **レシピ検索**: 選択したドーナツと在庫きのみから、作成可能なレシピを自動計算
+- **GPU アクセラレーション**: TypeGPU による高速レシピ検索（大規模データで自動有効化）
 - **星評価システム**: フレーバー合計値に基づく星評価と、プラスレベル・ハラモチエネルギーのブースト計算
 - **CSV インポート/エクスポート**: きのみ在庫とレシピ結果のCSV入出力に対応
 - **レスポンシブデザイン**: PC・タブレット・スマートフォンに最適化された表示
@@ -117,28 +118,36 @@ npm run dev
 
 ダッシュボードは展開/折りたたみ、表示/非表示の切り替えが可能です。
 
-### GPU アクセラレーション（開発中）
+### GPU アクセラレーション
 
-⚠️ **現在ステータス: 一時的に無効化**
+✅ **実装完了: TypeGPU採用**
 
-レシピ検索に WebGPU を使用した GPU アクセラレーションの実装を進めていますが、候補生成アルゴリズムに問題が見つかったため、現在は一時的に無効化されています。全ての検索は最適化された CPU バックトラッキングアルゴリズムで実行されます。
+レシピ検索に [TypeGPU](https://github.com/software-mansion/TypeGPU) を使用した GPU アクセラレーションを実装しました。大規模データセット（15種類以上のきのみ、4スロット以上）で自動的にGPU処理に切り替わり、高速な検索が可能です。
 
-**実装済み機能:**
-- ✅ WebGPU サポート検出
-- ✅ WGSL コンピュートシェーダー
-- ✅ GPU/CPU ハイブリッドアーキテクチャ
-- ⚠️ 候補生成アルゴリズム（修正中）
+**実装機能:**
+- ✅ TypeGPU による型安全なGPU実装
+- ✅ GPU サポートの自動検出
+- ✅ GPU/CPU 自動切り替え
+- ✅ 並列フレーバー計算
+- ✅ 候補生成アルゴリズム修正完了
+- ✅ CPU/GPU結果の一致を検証済み（257テスト）
 
-**既知の問題:**
-- GPU版の候補生成が全スロットを使用する組み合わせのみを生成し、少ないスロット数で要件を満たすレシピを見逃していた
-- 現在は修正済みだが、十分なテストを経てから再度有効化予定
+**特徴:**
+- **自動切り替え**: データサイズに応じて GPU/CPU を自動選択
+- **型安全性**: TypeScript で型チェックされた GPU コード
+- **フォールバック**: GPU 非対応環境では CPU 実装を使用
+- **透過的**: アプリケーションコードの変更不要
 
-**今後の予定:**
-- GPU版とCPU版の結果一致を検証
-- パフォーマンステストの実施
-- GPU機能の再有効化
+**パフォーマンス:**
+- 小規模データ（< 15種類のきのみ）: CPU 処理
+- 大規模データ（≥ 15種類のきのみ）: GPU 処理で高速化
 
-詳細な実装計画は [docs/GPU_ACCELERATION_PLAN.md](docs/GPU_ACCELERATION_PLAN.md) を参照してください。
+**ブラウザ互換性:**
+- Chrome 113+ (WebGPU 標準サポート)
+- Edge 113+
+- その他のブラウザ: CPU 実装で動作
+
+詳細な実装情報は [TYPEGPU_IMPLEMENTATION.md](TYPEGPU_IMPLEMENTATION.md) を参照してください。
 
 ## 🛠️ 利用可能なスクリプト
 
@@ -163,7 +172,7 @@ npm run dev
 - **Routing**: [TanStack Router v1](https://tanstack.com/router)
 - **Table**: [TanStack Table v8](https://tanstack.com/table)
 - **Virtual Scrolling**: [TanStack Virtual](https://tanstack.com/virtual)
-- **GPU Acceleration**: [WebGPU](https://www.w3.org/TR/webgpu/) with WGSL Compute Shaders
+- **GPU Acceleration**: [TypeGPU](https://github.com/software-mansion/TypeGPU) (Type-safe WebGPU)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Testing**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
 - **Linting/Formatting**: [Biome](https://biomejs.dev/)
@@ -188,11 +197,13 @@ src/
 │   └── ...
 ├── lib/                # ユーティリティ関数
 │   ├── finder.ts       # レシピ検索ロジック（CPU版）
-│   ├── enhanced-finder.ts  # GPU/CPU ハイブリッドファインダー
-│   ├── gpu/            # GPU アクセラレーション
+│   ├── enhanced-finder.ts  # GPU/CPU 自動切り替えファインダー
+│   ├── gpu/            # GPU アクセラレーション (TypeGPU)
 │   │   ├── webgpu-support.ts  # WebGPU サポート検出
-│   │   ├── gpu-finder.ts      # GPU レシピ検索
-│   │   └── shaders.wgsl.ts    # WGSL コンピュートシェーダー
+│   │   ├── tgpu-context.ts    # TypeGPU コンテキスト管理
+│   │   ├── tgpu-schemas.ts    # TypeGPU データスキーマ
+│   │   ├── tgpu-finder.ts     # TypeGPU レシピ検索
+│   │   └── tgpu-shaders.ts    # TypeGPU コンピュートシェーダー
 │   ├── csv.ts          # CSV入出力
 │   └── types.ts        # 型定義
 └── routes/             # ページルート（TanStack Router）
