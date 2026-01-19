@@ -4,6 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import Header from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PerformanceMonitor } from '../components/PerformanceMonitor'
 
 export const Route = createRootRoute({
   component: () => (
@@ -24,6 +25,7 @@ export const Route = createRootRoute({
           },
         ]}
       />
+      <PerformanceMonitor />
     </div>
   ),
 })

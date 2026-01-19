@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { fileURLToPath, URL } from 'node:url'
@@ -17,7 +18,16 @@ export default defineConfig({
     }),
     viteReact(),
     tailwindcss(),
-  ],
+    // Bundle analyzer - only runs when ANALYZE=true
+    process.env.ANALYZE === 'true' &&
+      visualizer({
+        filename: 'dist/stats.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+        template: 'treemap', // 'sunburst', 'treemap', 'network'
+      }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

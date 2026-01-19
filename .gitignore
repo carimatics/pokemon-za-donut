@@ -14,4 +14,7 @@ coverage
 # Lighthouse CI
 .lighthouseci
 
+# Bundle analyzer
+dist/stats.html
+
 .idea
