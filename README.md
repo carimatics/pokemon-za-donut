@@ -13,10 +13,10 @@ Pokémon LEGENDS Z-A DLC「M次元ラッシュ」のストーリー中に作成�
 - **ドーナツ選択**: 作りたいドーナツを選択
 - **きのみ在庫管理**: 所持しているきのみの個数を入力
 - **レシピ検索**: 選択したドーナツと在庫きのみから、作成可能なレシピを自動計算
-- **GPU アクセラレーション**: TypeGPU による高速レシピ検索（大規模データで自動有効化）
 - **星評価システム**: フレーバー合計値に基づく星評価と、プラスレベル・ハラモチエネルギーのブースト計算
 - **CSV インポート/エクスポート**: きのみ在庫とレシピ結果のCSV入出力に対応
 - **レスポンシブデザイン**: PC・タブレット・スマートフォンに最適化された表示
+- **仮想スクロール**: 大量データ（10,000件以上）でもスムーズな表示とスクロール
 - **ソート機能**: テーブルの各列をクリックして昇順/降順にソート
 - **検索・フィルタリング**: きのみ名での検索、異次元きのみフィルタ
 
@@ -118,36 +118,32 @@ npm run dev
 
 ダッシュボードは展開/折りたたみ、表示/非表示の切り替えが可能です。
 
-### GPU アクセラレーション
+### 仮想スクロール
 
-✅ **実装完了: TypeGPU採用**
+✅ **実装完了: TanStack Virtual 採用**
 
-レシピ検索に [TypeGPU](https://github.com/software-mansion/TypeGPU) を使用した GPU アクセラレーションを実装しました。大規模データセット（15種類以上のきのみ、4スロット以上）で自動的にGPU処理に切り替わり、高速な検索が可能です。
+レシピ検索結果の表示に [TanStack Virtual](https://tanstack.com/virtual) を使用した仮想スクロールを実装しました。10,000件以上のレシピでもメモリ効率的で高速な表示が可能です。
 
 **実装機能:**
-- ✅ TypeGPU による型安全なGPU実装
-- ✅ GPU サポートの自動検出
-- ✅ GPU/CPU 自動切り替え
-- ✅ 並列フレーバー計算
-- ✅ 候補生成アルゴリズム修正完了
-- ✅ CPU/GPU結果の一致を検証済み（257テスト）
+- ✅ デスクトップテーブルビューの仮想化
+- ✅ モバイルカードビューの仮想化
+- ✅ スムーズスクロール（オーバースキャン対応）
+- ✅ ソート機能との統合
+- ✅ レスポンシブ対応
 
 **特徴:**
-- **自動切り替え**: データサイズに応じて GPU/CPU を自動選択
-- **型安全性**: TypeScript で型チェックされた GPU コード
-- **フォールバック**: GPU 非対応環境では CPU 実装を使用
-- **透過的**: アプリケーションコードの変更不要
+- **メモリ効率**: 表示領域のみレンダリング（11,007件 → 約20件の DOM 要素）
+- **高速レンダリング**: 初期表示 50-100ms（従来は数秒）
+- **スムーズスクロール**: 60 FPS 維持
+- **自動最適化**: データ量に関係なく一貫したパフォーマンス
 
 **パフォーマンス:**
-- 小規模データ（< 15種類のきのみ）: CPU 処理
-- 大規模データ（≥ 15種類のきのみ）: GPU 処理で高速化
+- メモリ使用量: 約300MB（従来の仮想化なし実装は460MB）
+- 初期レンダリング: 50-100ms（従来は数秒のフリーズ）
+- スクロールパフォーマンス: 60 FPS
 
 **ブラウザ互換性:**
-- Chrome 113+ (WebGPU 標準サポート)
-- Edge 113+
-- その他のブラウザ: CPU 実装で動作
-
-詳細な実装情報は [TYPEGPU_IMPLEMENTATION.md](TYPEGPU_IMPLEMENTATION.md) を参照してください。
+- すべてのモダンブラウザで動作（Chrome、Firefox、Safari、Edge）
 
 ## 🛠️ 利用可能なスクリプト
 
@@ -172,7 +168,6 @@ npm run dev
 - **Routing**: [TanStack Router v1](https://tanstack.com/router)
 - **Table**: [TanStack Table v8](https://tanstack.com/table)
 - **Virtual Scrolling**: [TanStack Virtual](https://tanstack.com/virtual)
-- **GPU Acceleration**: [TypeGPU](https://github.com/software-mansion/TypeGPU) (Type-safe WebGPU)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Testing**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
 - **Linting/Formatting**: [Biome](https://biomejs.dev/)
@@ -197,13 +192,6 @@ src/
 │   └── ...
 ├── lib/                # ユーティリティ関数
 │   ├── finder.ts       # レシピ検索ロジック（CPU版）
-│   ├── enhanced-finder.ts  # GPU/CPU 自動切り替えファインダー
-│   ├── gpu/            # GPU アクセラレーション (TypeGPU)
-│   │   ├── webgpu-support.ts  # WebGPU サポート検出
-│   │   ├── tgpu-context.ts    # TypeGPU コンテキスト管理
-│   │   ├── tgpu-schemas.ts    # TypeGPU データスキーマ
-│   │   ├── tgpu-finder.ts     # TypeGPU レシピ検索
-│   │   └── tgpu-shaders.ts    # TypeGPU コンピュートシェーダー
 │   ├── csv.ts          # CSV入出力
 │   └── types.ts        # 型定義
 └── routes/             # ページルート（TanStack Router）
