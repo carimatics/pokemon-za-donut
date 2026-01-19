@@ -63,6 +63,31 @@ npm test
 npm run test:coverage
 ```
 
+## 📊 パフォーマンスモニタリング
+
+このプロジェクトには Web Vitals と Lighthouse CI が統合されています。
+
+### Web Vitals
+
+アプリケーションは自動的に以下のメトリクスを計測します：
+
+- **CLS (Cumulative Layout Shift)**: 視覚的安定性
+- **FCP (First Contentful Paint)**: 初回コンテンツ表示
+- **LCP (Largest Contentful Paint)**: 最大コンテンツ表示
+- **TTFB (Time to First Byte)**: サーバー応答時間
+- **INP (Interaction to Next Paint)**: インタラクション応答性
+
+開発環境ではコンソールに詳細なメトリクスが表示されます。
+
+### Lighthouse CI
+
+```bash
+# ローカルで Lighthouse を実行（要：@lhci/cli をグローバルインストール）
+npm run lighthouse
+```
+
+CI/CD パイプラインでは、プルリクエストごとに自動的に Lighthouse CI が実行され、パフォーマンススコアが報告されます。
+
 ## 🛠️ 利用可能なスクリプト
 
 | コマンド | 説明 |
@@ -71,6 +96,8 @@ npm run test:coverage
 | `npm run build` | プロダクション用にビルド |
 | `npm run preview` | ビルドしたアプリをプレビュー |
 | `npm test` | テストを実行 |
+| `npm run test:coverage` | カバレッジ付きでテストを実行 |
+| `npm run lighthouse` | Lighthouse CI でパフォーマンスを計測 |
 | `npm run lint` | コードをリント |
 | `npm run format` | コードをフォーマット |
 | `npm run check` | リントとフォーマットをチェック |

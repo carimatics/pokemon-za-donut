@@ -11,7 +11,8 @@
     "test:coverage": "vitest run --coverage",
     "format": "biome format",
     "lint": "biome lint",
-    "check": "biome check"
+    "check": "biome check",
+    "lighthouse": "npm run build && lhci autorun"
   },
   "dependencies": {
     "@faker-js/faker": "^10.0.0",

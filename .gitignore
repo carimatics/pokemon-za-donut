@@ -11,4 +11,7 @@ count.txt
 
 coverage
 
+# Lighthouse CI
+.lighthouseci
+
 .idea
