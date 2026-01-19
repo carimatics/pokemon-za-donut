@@ -12,22 +12,17 @@
 
 import type { BerryStock, Donut } from '@/lib/types'
 import { findRequiredCombinations, type FindRecipesResult } from '@/lib/finder'
-import { isWebGPUSupported } from '@/lib/gpu/webgpu-support'
 import { isTypeGPUSupported } from '@/lib/gpu/tgpu-context'
-import { GPURecipeFinder } from '@/lib/gpu/gpu-finder'
 import { TypeGPURecipeFinder } from '@/lib/gpu/tgpu-finder'
 
 // Thresholds for GPU acceleration
 const GPU_MIN_BERRY_COUNT = 15 // Minimum number of berries to use GPU
 const GPU_MIN_SLOTS = 4 // Minimum number of slots to use GPU
 
-export type GPUImplementation = 'typegpu' | 'webgpu' | 'auto'
-
 export interface FinderOptions {
   forceGPU?: boolean // Force GPU usage even if below thresholds
   forceCPU?: boolean // Force CPU usage even if GPU is available
   gpuBatchSize?: number // Batch size for GPU processing (default: 10000)
-  gpuImplementation?: GPUImplementation // Which GPU implementation to use (default: 'auto')
 }
 
 /**
@@ -37,14 +32,13 @@ export interface FinderOptions {
  * the best implementation (GPU or CPU) based on the current environment
  * and dataset characteristics.
  *
- * Supports both TypeGPU (type-safe, recommended) and raw WebGPU implementations.
+ * Uses TypeGPU for type-safe GPU acceleration.
  */
 export class EnhancedRecipeFinder {
-  private gpuFinder: GPURecipeFinder | TypeGPURecipeFinder | null = null
+  private gpuFinder: TypeGPURecipeFinder | null = null
   private gpuAvailable = false
   private gpuInitialized = false
   private initializationError: Error | null = null
-  private activeImplementation: GPUImplementation = 'auto'
 
   /**
    * Initialize the finder and detect GPU support
@@ -52,57 +46,24 @@ export class EnhancedRecipeFinder {
    * This method is optional - if not called, initialization will happen
    * automatically on first use. However, calling it explicitly allows
    * you to handle initialization errors upfront.
-   *
-   * @param preferredImplementation - Which GPU implementation to prefer (default: 'auto')
    */
-  async initialize(preferredImplementation: GPUImplementation = 'auto'): Promise<void> {
+  async initialize(): Promise<void> {
     if (this.gpuInitialized) {
       return
     }
 
     try {
-      // Determine which implementation to use
-      let implementation: 'typegpu' | 'webgpu' | null = null
+      // Check TypeGPU support
+      const typeGPUSupported = await isTypeGPUSupported()
 
-      if (preferredImplementation === 'auto') {
-        // Try TypeGPU first (more type-safe and modern)
-        const typeGPUSupported = await isTypeGPUSupported()
-        if (typeGPUSupported) {
-          implementation = 'typegpu'
-        } else {
-          // Fall back to raw WebGPU
-          const webGPUSupported = await isWebGPUSupported()
-          if (webGPUSupported) {
-            implementation = 'webgpu'
-          }
-        }
-      } else if (preferredImplementation === 'typegpu') {
-        const typeGPUSupported = await isTypeGPUSupported()
-        if (typeGPUSupported) {
-          implementation = 'typegpu'
-        }
-      } else if (preferredImplementation === 'webgpu') {
-        const webGPUSupported = await isWebGPUSupported()
-        if (webGPUSupported) {
-          implementation = 'webgpu'
-        }
-      }
-
-      // Initialize the selected implementation
-      if (implementation === 'typegpu') {
+      // Initialize TypeGPU if supported
+      if (typeGPUSupported) {
         this.gpuFinder = new TypeGPURecipeFinder()
         await this.gpuFinder.initialize()
         this.gpuAvailable = true
-        this.activeImplementation = 'typegpu'
         console.log('[EnhancedRecipeFinder] TypeGPU acceleration enabled')
-      } else if (implementation === 'webgpu') {
-        this.gpuFinder = new GPURecipeFinder()
-        await this.gpuFinder.initialize()
-        this.gpuAvailable = true
-        this.activeImplementation = 'webgpu'
-        console.log('[EnhancedRecipeFinder] WebGPU acceleration enabled')
       } else {
-        console.log('[EnhancedRecipeFinder] GPU not available, using CPU only')
+        console.log('[EnhancedRecipeFinder] TypeGPU not available, using CPU only')
         this.gpuAvailable = false
       }
 
@@ -133,7 +94,7 @@ export class EnhancedRecipeFinder {
   ): Promise<FindRecipesResult> {
     // Initialize if not already done
     if (!this.gpuInitialized) {
-      await this.initialize(options.gpuImplementation || 'auto')
+      await this.initialize()
     }
 
     // Determine whether to use GPU
@@ -141,7 +102,7 @@ export class EnhancedRecipeFinder {
 
     if (shouldUseGPU && this.gpuFinder) {
       try {
-        console.log(`[EnhancedRecipeFinder] Using GPU acceleration (${this.activeImplementation})`)
+        console.log('[EnhancedRecipeFinder] Using GPU acceleration (TypeGPU)')
         const startTime = performance.now()
 
         const result = await this.gpuFinder.findRecipes(
@@ -212,13 +173,6 @@ export class EnhancedRecipeFinder {
   }
 
   /**
-   * Get the active GPU implementation
-   */
-  getActiveImplementation(): GPUImplementation {
-    return this.activeImplementation
-  }
-
-  /**
    * Get GPU initialization error if any
    */
   getInitializationError(): Error | null {
@@ -232,7 +186,6 @@ export class EnhancedRecipeFinder {
     gpuAvailable: boolean
     gpuInitialized: boolean
     cpuAvailable: boolean
-    implementation: GPUImplementation
     error: string | null
   }> {
     if (!this.gpuInitialized) {
@@ -243,7 +196,6 @@ export class EnhancedRecipeFinder {
       gpuAvailable: this.gpuAvailable,
       gpuInitialized: this.gpuInitialized,
       cpuAvailable: true,
-      implementation: this.activeImplementation,
       error: this.initializationError?.message || null,
     }
   }

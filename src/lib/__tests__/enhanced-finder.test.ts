@@ -2,17 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { EnhancedRecipeFinder, createEnhancedFinder } from '../enhanced-finder'
 import type { Berry, BerryStock, Donut } from '../types'
 
-// Mock the dependencies
-vi.mock('../gpu/webgpu-support', () => ({
-  isWebGPUSupported: vi.fn().mockResolvedValue(false),
-}))
-
-vi.mock('../gpu/gpu-finder', () => ({
-  GPURecipeFinder: vi.fn().mockImplementation(() => ({
-    initialize: vi.fn().mockResolvedValue(undefined),
-    findRecipes: vi.fn().mockResolvedValue({ recipes: [], limitReached: false }),
-    destroy: vi.fn(),
-  })),
+// Mock TypeGPU support check
+vi.mock('../gpu/tgpu-context', () => ({
+  isTypeGPUSupported: vi.fn().mockResolvedValue(false),
 }))
 
 describe('EnhancedRecipeFinder', () => {
@@ -75,8 +67,8 @@ describe('EnhancedRecipeFinder', () => {
     })
 
     it('should handle initialization errors gracefully', async () => {
-      const { isWebGPUSupported } = await import('../gpu/webgpu-support')
-      vi.mocked(isWebGPUSupported).mockRejectedValueOnce(new Error('GPU init failed'))
+      const tgpuContext = await import('../gpu/tgpu-context')
+      vi.mocked(tgpuContext.isTypeGPUSupported).mockRejectedValueOnce(new Error('GPU init failed'))
 
       await finder.initialize()
 

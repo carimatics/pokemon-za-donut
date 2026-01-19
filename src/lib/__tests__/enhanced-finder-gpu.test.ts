@@ -1,14 +1,13 @@
 /**
  * Enhanced Finder TypeGPU Integration Tests
  *
- * Tests for EnhancedRecipeFinder with TypeGPU and WebGPU implementations
+ * Tests for EnhancedRecipeFinder with TypeGPU implementation
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { EnhancedRecipeFinder } from '../enhanced-finder'
 import type { BerryStock, Donut } from '@/lib/types'
 import { isTypeGPUSupported } from '../gpu/tgpu-context'
-import { isWebGPUSupported } from '../gpu/webgpu-support'
 
 // Helper to create test data
 function createBerryStock(
@@ -32,82 +31,35 @@ function createBerryStock(
 describe('EnhancedRecipeFinder with TypeGPU', () => {
   let finder: EnhancedRecipeFinder
   let typeGPUSupported = false
-  let webGPUSupported = false
 
   beforeEach(async () => {
     finder = new EnhancedRecipeFinder()
     typeGPUSupported = await isTypeGPUSupported()
-    webGPUSupported = await isWebGPUSupported()
   })
 
   afterEach(() => {
     finder.destroy()
   })
 
-  describe('Implementation selection', () => {
-    it('should select TypeGPU when available and preferred', async () => {
+  describe('GPU availability', () => {
+    it('should detect TypeGPU when available', async () => {
       if (!typeGPUSupported) {
         return
       }
 
-      await finder.initialize('typegpu')
-
-      const implementation = finder.getActiveImplementation()
-      expect(implementation).toBe('typegpu')
-      expect(finder.isGPUAvailable()).toBe(true)
-    })
-
-    it('should select WebGPU when TypeGPU not available but WebGPU is', async () => {
-      if (typeGPUSupported) {
-        return
-      }
-
-      if (!webGPUSupported) {
-        return
-      }
-
-      await finder.initialize('auto')
-
-      const implementation = finder.getActiveImplementation()
-      expect(implementation).toBe('webgpu')
-      expect(finder.isGPUAvailable()).toBe(true)
-    })
-
-    it('should respect explicit TypeGPU preference', async () => {
-      if (!typeGPUSupported) {
-        return
-      }
-
-      await finder.initialize('typegpu')
-
-      const implementation = finder.getActiveImplementation()
-      expect(implementation).toBe('typegpu')
-    })
-
-    it('should respect explicit WebGPU preference', async () => {
-      if (!webGPUSupported) {
-        return
-      }
-
-      await finder.initialize('webgpu')
-
-      const implementation = finder.getActiveImplementation()
-      expect(implementation).toBe('webgpu')
-    })
-
-    it('should use auto selection by default', async () => {
       await finder.initialize()
 
-      const implementation = finder.getActiveImplementation()
+      expect(finder.isGPUAvailable()).toBe(true)
+    })
 
+    it('should fallback to CPU when GPU not available', async () => {
       if (typeGPUSupported) {
-        expect(implementation).toBe('typegpu')
-      } else if (webGPUSupported) {
-        expect(implementation).toBe('webgpu')
-      } else {
-        expect(implementation).toBe('auto')
-        expect(finder.isGPUAvailable()).toBe(false)
+        return
       }
+
+      await finder.initialize()
+
+      expect(finder.isGPUAvailable()).toBe(false)
     })
   })
 
@@ -138,7 +90,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
     })
 
     it('should use GPU for large datasets when available', async () => {
-      if (!typeGPUSupported && !webGPUSupported) {
+      if (!typeGPUSupported) {
         return
       }
 
@@ -168,7 +120,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
     })
 
     it('should respect forceGPU option', async () => {
-      if (!typeGPUSupported && !webGPUSupported) {
+      if (!typeGPUSupported) {
         return
       }
 
@@ -223,32 +175,9 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
     })
   })
 
-  describe('Implementation-specific options', () => {
-    it('should pass gpuImplementation option through', async () => {
-      if (!typeGPUSupported) {
-        return
-      }
-
-      const stocks: BerryStock[] = Array.from({ length: 20 }, (_, i) =>
-        createBerryStock(`Berry${i}`, { spicy: 1, fresh: 1, sweet: 1, bitter: 1, sour: 1 }, 10),
-      )
-
-      const donut: Donut = {
-        id: "test-test", name: 'Test',
-        flavors: { spicy: 10, fresh: 10, sweet: 10, bitter: 10, sour: 10 },
-      }
-
-      // Should initialize with TypeGPU when specified
-      await finder.findRecipes(donut, stocks, 5, {
-        gpuImplementation: 'typegpu',
-        forceGPU: true,
-      })
-
-      expect(finder.getActiveImplementation()).toBe('typegpu')
-    })
-
+  describe('GPU options', () => {
     it('should handle gpuBatchSize option', async () => {
-      if (!typeGPUSupported && !webGPUSupported) {
+      if (!typeGPUSupported) {
         return
       }
 
@@ -279,7 +208,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
         return
       }
 
-      await finder.initialize('typegpu')
+      await finder.initialize()
 
       const stocks: BerryStock[] = [
         createBerryStock('Spicy', { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 }, 5),
@@ -337,36 +266,23 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
   })
 
   describe('Performance info', () => {
-    it('should report TypeGPU in performance info', async () => {
+    it('should report GPU availability in performance info', async () => {
       if (!typeGPUSupported) {
         return
       }
 
-      await finder.initialize('typegpu')
+      await finder.initialize()
 
       const info = await finder.getPerformanceInfo()
 
       expect(info.gpuAvailable).toBe(true)
       expect(info.gpuInitialized).toBe(true)
       expect(info.cpuAvailable).toBe(true)
-      expect(info.implementation).toBe('typegpu')
       expect(info.error).toBeNull()
     })
 
-    it('should report WebGPU in performance info', async () => {
-      if (!webGPUSupported) {
-        return
-      }
-
-      await finder.initialize('webgpu')
-
-      const info = await finder.getPerformanceInfo()
-
-      expect(info.implementation).toBe('webgpu')
-    })
-
-    it('should report auto when no GPU available', async () => {
-      if (typeGPUSupported || webGPUSupported) {
+    it('should report when GPU not available', async () => {
+      if (typeGPUSupported) {
         return
       }
 
@@ -375,13 +291,13 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       const info = await finder.getPerformanceInfo()
 
       expect(info.gpuAvailable).toBe(false)
-      expect(info.implementation).toBe('auto')
+      expect(info.cpuAvailable).toBe(true)
     })
   })
 
   describe('Error handling and fallback', () => {
     it('should fallback to CPU if GPU processing fails', async () => {
-      if (!typeGPUSupported && !webGPUSupported) {
+      if (!typeGPUSupported) {
         return
       }
 
@@ -409,7 +325,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       // Mock to force initialization error
       vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await finderWithError.initialize('typegpu')
+      await finderWithError.initialize()
 
       // Should not throw, should fall back to CPU
       const stocks: BerryStock[] = [
