@@ -7,7 +7,7 @@ import { EnhancedRecipeFinder } from '@/lib/enhanced-finder'
 
 export function useRecipeFinder() {
   // Create finder instance using useRef to ensure single instance per hook usage
-  const finderRef = useRef<EnhancedRecipeFinder>()
+  const finderRef = useRef<EnhancedRecipeFinder | null>(null)
   if (!finderRef.current) {
     finderRef.current = new EnhancedRecipeFinder()
   }
