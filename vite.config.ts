@@ -3,6 +3,7 @@ import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import typeGPU from 'unplugin-typegpu/vite'
 
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { fileURLToPath, URL } from 'node:url'
@@ -11,6 +12,7 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
   base: '/pokemon-za-donut',
   plugins: [
+    typeGPU({}),
     devtools(),
     tanstackRouter({
       target: 'react',

@@ -1,4 +1,4 @@
-import { findRequiredCombinations } from '@/lib/finder'
+import { EnhancedRecipeFinder } from '@/lib/enhanced-finder'
 import type { BerryStock, Donut } from '@/lib/types'
 
 export interface WorkerRequest {
@@ -6,6 +6,11 @@ export interface WorkerRequest {
   donut: Donut
   stocks: BerryStock[]
   slots: number
+  options?: {
+    forceGPU?: boolean
+    forceCPU?: boolean
+    gpuBatchSize?: number
+  }
 }
 
 export interface WorkerResponse {
@@ -17,15 +22,38 @@ export interface WorkerResponse {
       stocks: BerryStock[]
     }>
     limitReached: boolean
+    usedGPU?: boolean
   }
   error?: string
 }
 
-self.onmessage = (e: MessageEvent<WorkerRequest>) => {
-  const { requestId, donut, stocks, slots } = e.data
+// Initialize the enhanced finder once for the worker lifetime
+const finder = new EnhancedRecipeFinder()
+let finderInitialized = false
+
+// Initialize GPU support when worker starts
+finder.initialize().then(() => {
+  finderInitialized = true
+  const perfInfo = finder.isGPUAvailable()
+  console.log('[Worker] Finder initialized, GPU available:', perfInfo)
+}).catch((error) => {
+  finderInitialized = true
+  console.error('[Worker] Finder initialization warning:', error)
+  // Worker will still work with CPU fallback
+})
+
+self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
+  const { requestId, donut, stocks, slots, options } = e.data
 
   try {
-    const result = findRequiredCombinations(donut, stocks, slots)
+    // Wait for initialization if not ready
+    if (!finderInitialized) {
+      await finder.initialize()
+      finderInitialized = true
+    }
+
+    // Find recipes using GPU or CPU automatically
+    const result = await finder.findRecipes(donut, stocks, slots, options || {})
 
     const response: WorkerResponse = {
       requestId,
@@ -33,6 +61,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
       result: {
         recipes: result.recipes,
         limitReached: result.limitReached,
+        usedGPU: finder.isGPUAvailable(),
       },
     }
 
