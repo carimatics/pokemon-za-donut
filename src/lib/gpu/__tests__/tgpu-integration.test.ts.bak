@@ -30,18 +30,6 @@ function createBerryStock(
   }
 }
 
-// Helper to create test donuts
-function createTestDonut(
-  name: string,
-  flavors: { spicy: number; fresh: number; sweet: number; bitter: number; sour: number },
-): Donut {
-  return {
-    id: `test-${name.toLowerCase().replace(/\s+/g, '-')}`,
-    name,
-    flavors,
-  }
-}
-
 describe('TypeGPU Integration Tests', () => {
   let gpuSupported = false
   let finder: TypeGPURecipeFinder | null = null
@@ -86,7 +74,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 5, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -109,7 +97,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'TestDonut',
+        id: "test-testdonut", name: 'TestDonut',
         flavors: { spicy: 20, fresh: 0, sweet: 10, bitter: 0, sour: 0 },
       }
 
@@ -140,7 +128,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'ComplexDonut',
+        id: "test-complexdonut", name: 'ComplexDonut',
         flavors: { spicy: 10, fresh: 8, sweet: 8, bitter: 2, sour: 0 },
       }
 
@@ -161,7 +149,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'ImpossibleDonut',
+        id: "test-impossibledonut", name: 'ImpossibleDonut',
         flavors: { spicy: 10, fresh: 10, sweet: 10, bitter: 10, sour: 10 }, // Requires fresh but none available
       }
 
@@ -184,7 +172,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'BalancedDonut',
+        id: "test-balanceddonut", name: 'BalancedDonut',
         flavors: { spicy: 15, fresh: 15, sweet: 15, bitter: 15, sour: 15 },
       }
 
@@ -216,7 +204,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'MixedDonut',
+        id: "test-mixeddonut", name: 'MixedDonut',
         flavors: { spicy: 20, fresh: 20, sweet: 20, bitter: 20, sour: 20 },
       }
 
@@ -262,7 +250,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'SimpleDonut',
+        id: "test-simpledonut", name: 'SimpleDonut',
         flavors: { spicy: 50, fresh: 50, sweet: 50, bitter: 50, sour: 50 },
       }
 
@@ -291,7 +279,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'LargeTest',
+        id: "test-largetest", name: 'LargeTest',
         flavors: { spicy: 10, fresh: 10, sweet: 10, bitter: 0, sour: 0 },
       }
 
@@ -314,7 +302,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 1, fresh: 1, sweet: 1, bitter: 1, sour: 1 },
       }
 
@@ -340,7 +328,7 @@ describe('TypeGPU Integration Tests', () => {
 
       const stocks: BerryStock[] = []
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -361,7 +349,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -382,7 +370,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -414,7 +402,7 @@ describe('TypeGPU Integration Tests', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 20, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 

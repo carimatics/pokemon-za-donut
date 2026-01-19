@@ -59,7 +59,6 @@ describe('TypeGPU Integration Tests', () => {
   describe('TypeGPURecipeFinder initialization', () => {
     it('should initialize successfully when GPU is available', async () => {
       if (!gpuSupported) {
-        console.log('Skipping: TypeGPU not supported in test environment')
         return
       }
 
@@ -87,7 +86,6 @@ describe('TypeGPU Integration Tests', () => {
   describe('CPU vs TypeGPU result comparison', () => {
     it('should produce same results as CPU for simple case', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -117,7 +115,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should handle complex multi-berry combinations', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -140,7 +137,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should find no recipes when requirements cannot be met', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -163,7 +159,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should handle edge case with single berry type', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -190,7 +185,6 @@ describe('TypeGPU Integration Tests', () => {
   describe('Real-world berry data', () => {
     it('should work with actual Pokemon berry flavors', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -241,7 +235,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should handle partial slot usage correctly', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -268,7 +261,6 @@ describe('TypeGPU Integration Tests', () => {
   describe('Performance characteristics', () => {
     it('should handle large batch sizes', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -293,7 +285,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should respect batch size limits', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -322,7 +313,6 @@ describe('TypeGPU Integration Tests', () => {
   describe('Error handling', () => {
     it('should handle empty stocks gracefully', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -340,7 +330,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should handle zero slots', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -360,7 +349,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should handle stocks with zero count', async () => {
       if (!gpuSupported || !finder) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -390,7 +378,6 @@ describe('TypeGPU Integration Tests', () => {
   describe('Memory management', () => {
     it('should clean up resources properly', async () => {
       if (!gpuSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -414,7 +401,6 @@ describe('TypeGPU Integration Tests', () => {
 
     it('should be safe to destroy multiple times', async () => {
       if (!gpuSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 

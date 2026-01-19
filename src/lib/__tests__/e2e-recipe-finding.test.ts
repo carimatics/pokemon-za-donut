@@ -135,7 +135,6 @@ describe('E2E Recipe Finding with Real Data', () => {
   describe('Performance comparison', () => {
     it('should measure CPU vs GPU performance with large dataset', async () => {
       if (!gpuSupported) {
-        console.log('Skipping: GPU not supported')
         return
       }
 

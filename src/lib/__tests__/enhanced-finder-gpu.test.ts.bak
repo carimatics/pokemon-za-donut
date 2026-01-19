@@ -10,18 +10,6 @@ import type { BerryStock, Donut } from '@/lib/types'
 import { isTypeGPUSupported } from '../gpu/tgpu-context'
 import { isWebGPUSupported } from '../gpu/webgpu-support'
 
-// Helper to create test donuts
-function createTestDonut(
-  name: string,
-  flavors: { spicy: number; fresh: number; sweet: number; bitter: number; sour: number },
-): { id: string; name: string; flavors: typeof flavors } {
-  return {
-    id: `test-${name.toLowerCase().replace(/\s+/g, "-")}`,
-    name,
-    flavors,
-  }
-}
-
 // Helper to create test data
 function createBerryStock(
   name: string,
@@ -29,7 +17,14 @@ function createBerryStock(
   count: number,
 ): BerryStock {
   return {
-    berry: { name, flavors },
+    berry: {
+      id: `test-${name.toLowerCase().replace(/\s+/g, '-')}`,
+      name,
+      level: 1,
+      calories: 60,
+      flavors,
+      hyper: false,
+    },
     count,
   }
 }
@@ -131,7 +126,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       ]
 
       const donut: Donut = {
-        name: 'SmallDonut',
+        id: "test-smalldonut", name: 'SmallDonut',
         flavors: { spicy: 10, fresh: 10, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -161,7 +156,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       )
 
       const donut: Donut = {
-        name: 'LargeDonut',
+        id: "test-largedonut", name: 'LargeDonut',
         flavors: { spicy: 50, fresh: 50, sweet: 50, bitter: 50, sour: 50 },
       }
 
@@ -191,7 +186,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -218,7 +213,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       )
 
       const donut: Donut = {
-        name: 'LargeDonut',
+        id: "test-largedonut", name: 'LargeDonut',
         flavors: { spicy: 50, fresh: 50, sweet: 50, bitter: 50, sour: 50 },
       }
 
@@ -247,7 +242,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       )
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 10, sweet: 10, bitter: 10, sour: 10 },
       }
 
@@ -273,7 +268,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       )
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 5, fresh: 5, sweet: 5, bitter: 5, sour: 5 },
       }
 
@@ -303,7 +298,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       ]
 
       const donut: Donut = {
-        name: 'TestDonut',
+        id: "test-testdonut", name: 'TestDonut',
         flavors: { spicy: 20, fresh: 10, sweet: 20, bitter: 5, sour: 5 },
       }
 
@@ -339,7 +334,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
       const stocks: BerryStock[] = []
       const donut: Donut = {
-        name: 'Empty',
+        id: "test-empty", name: 'Empty',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 
@@ -411,7 +406,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       )
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 10, sweet: 10, bitter: 10, sour: 10 },
       }
 
@@ -436,7 +431,7 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
       ]
 
       const donut: Donut = {
-        name: 'Test',
+        id: "test-test", name: 'Test',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
 

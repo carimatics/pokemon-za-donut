@@ -47,7 +47,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
   describe('Implementation selection', () => {
     it('should select TypeGPU when available and preferred', async () => {
       if (!typeGPUSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -60,12 +59,10 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should select WebGPU when TypeGPU not available but WebGPU is', async () => {
       if (typeGPUSupported) {
-        console.log('Skipping: TypeGPU is available, cannot test WebGPU fallback')
         return
       }
 
       if (!webGPUSupported) {
-        console.log('Skipping: Neither TypeGPU nor WebGPU supported')
         return
       }
 
@@ -78,7 +75,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should respect explicit TypeGPU preference', async () => {
       if (!typeGPUSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -90,7 +86,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should respect explicit WebGPU preference', async () => {
       if (!webGPUSupported) {
-        console.log('Skipping: WebGPU not supported')
         return
       }
 
@@ -144,7 +139,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should use GPU for large datasets when available', async () => {
       if (!typeGPUSupported && !webGPUSupported) {
-        console.log('Skipping: No GPU support')
         return
       }
 
@@ -175,7 +169,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should respect forceGPU option', async () => {
       if (!typeGPUSupported && !webGPUSupported) {
-        console.log('Skipping: No GPU support')
         return
       }
 
@@ -233,7 +226,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
   describe('Implementation-specific options', () => {
     it('should pass gpuImplementation option through', async () => {
       if (!typeGPUSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -257,7 +249,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should handle gpuBatchSize option', async () => {
       if (!typeGPUSupported && !webGPUSupported) {
-        console.log('Skipping: No GPU support')
         return
       }
 
@@ -285,7 +276,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
   describe('Correctness verification', () => {
     it('should produce correct results with TypeGPU', async () => {
       if (!typeGPUSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -349,7 +339,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
   describe('Performance info', () => {
     it('should report TypeGPU in performance info', async () => {
       if (!typeGPUSupported) {
-        console.log('Skipping: TypeGPU not supported')
         return
       }
 
@@ -366,7 +355,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should report WebGPU in performance info', async () => {
       if (!webGPUSupported) {
-        console.log('Skipping: WebGPU not supported')
         return
       }
 
@@ -379,7 +367,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
 
     it('should report auto when no GPU available', async () => {
       if (typeGPUSupported || webGPUSupported) {
-        console.log('Skipping: GPU is available')
         return
       }
 
@@ -395,7 +382,6 @@ describe('EnhancedRecipeFinder with TypeGPU', () => {
   describe('Error handling and fallback', () => {
     it('should fallback to CPU if GPU processing fails', async () => {
       if (!typeGPUSupported && !webGPUSupported) {
-        console.log('Skipping: No GPU support to test fallback')
         return
       }
 

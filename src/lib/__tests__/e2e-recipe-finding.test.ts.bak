@@ -12,17 +12,6 @@ import { donuts } from '@/data/donuts'
 import type { BerryStock } from '@/lib/types'
 import { isTypeGPUSupported } from '../gpu/tgpu-context'
 
-// Helper to create test donuts
-function createTestDonut(
-  name: string,
-  flavors: { spicy: number; fresh: number; sweet: number; bitter: number; sour: number },
-): { id: string; name: string; flavors: typeof flavors } {
-  return {
-    id: `test-${name.toLowerCase().replace(/\s+/g, "-")}`,
-    name,
-    flavors,
-  }
-}
 
 describe('E2E Recipe Finding with Real Data', () => {
   let finder: EnhancedRecipeFinder
@@ -112,6 +101,7 @@ describe('E2E Recipe Finding with Real Data', () => {
 
       // Create simple donut requirement
       const donut = {
+        id: "test-donut",
         name: 'Test',
         flavors: { spicy: 20, fresh: 20, sweet: 0, bitter: 0, sour: 0 },
       }
@@ -129,6 +119,7 @@ describe('E2E Recipe Finding with Real Data', () => {
       }))
 
       const donut = {
+        id: "test-donut",
         name: 'ComplexTest',
         flavors: { spicy: 50, fresh: 50, sweet: 50, bitter: 50, sour: 50 },
       }
@@ -154,6 +145,7 @@ describe('E2E Recipe Finding with Real Data', () => {
       }))
 
       const donut = {
+        id: "test-donut",
         name: 'PerfTest',
         flavors: { spicy: 30, fresh: 30, sweet: 30, bitter: 30, sour: 30 },
       }
@@ -192,6 +184,7 @@ describe('E2E Recipe Finding with Real Data', () => {
       }))
 
       const donut = {
+        id: "test-donut",
         name: 'BatchTest',
         flavors: { spicy: 10, fresh: 10, sweet: 10, bitter: 10, sour: 10 },
       }
@@ -217,6 +210,7 @@ describe('E2E Recipe Finding with Real Data', () => {
 
       // Require more than 1 berry can provide
       const donut = {
+        id: "test-donut",
         name: 'ImpossibleTest',
         flavors: { spicy: 100, fresh: 100, sweet: 100, bitter: 100, sour: 100 },
       }
@@ -241,6 +235,7 @@ describe('E2E Recipe Finding with Real Data', () => {
       }
 
       const donut = {
+        id: "test-donut",
         name: 'ConflictTest',
         // High requirements across all flavors
         flavors: { spicy: 100, fresh: 100, sweet: 100, bitter: 100, sour: 100 },
@@ -255,8 +250,12 @@ describe('E2E Recipe Finding with Real Data', () => {
     it('should handle berry with zero flavors', async () => {
       // Create a hypothetical berry with no flavors
       const emptyBerry = {
+        id: "test-empty-berry",
         name: 'Empty Berry',
+        level: 1,
+        calories: 60,
         flavors: { spicy: 0, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
+        hyper: false,
       }
 
       const stocks: BerryStock[] = [
@@ -265,6 +264,7 @@ describe('E2E Recipe Finding with Real Data', () => {
       ]
 
       const donut = {
+        id: "test-donut",
         name: 'Test',
         flavors: { spicy: 10, fresh: 0, sweet: 0, bitter: 0, sour: 0 },
       }
@@ -285,7 +285,7 @@ describe('E2E Recipe Finding with Real Data', () => {
 
       // Create a simple test donut with moderate requirements
       const simpleDonut = {
-        name: 'TestDonut',
+        id: "test-testdonut", name: 'TestDonut',
         flavors: { spicy: 50, fresh: 50, sweet: 50, bitter: 50, sour: 50 },
       }
 

@@ -40,6 +40,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    // Suppress console output during tests
+    silent: false, // Keep false to see test results, but we'll mock console
+    reporters: ['default'],
+    logHeapUsage: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
