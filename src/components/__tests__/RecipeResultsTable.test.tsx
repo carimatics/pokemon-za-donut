@@ -340,14 +340,14 @@ describe('RecipeResultsTable', () => {
 
     // Check mobile view displays plus level and donut energy values in header
     const contentText = container.textContent || ''
-    // Plus level values (5, 11, 150)
-    expect(contentText).toContain('Lv.5')
-    expect(contentText).toContain('Lv.11')
-    expect(contentText).toContain('Lv.150')
-    // Donut energy values (100, 132, 1500)
-    expect(contentText).toContain('100')
-    expect(contentText).toContain('132')
-    expect(contentText).toContain('1500')
+    // Plus level values (5, 11, 150) with space after "Lv."
+    expect(contentText).toContain('+Lv. 5')
+    expect(contentText).toContain('+Lv. 11')
+    expect(contentText).toContain('+Lv. 150')
+    // Donut energy values (100, 132, 1500) with "kcal" suffix
+    expect(contentText).toContain('100 kcal')
+    expect(contentText).toContain('132 kcal')
+    expect(contentText).toContain('1500 kcal')
   })
 
   it('should format berries text correctly in mobile view', () => {

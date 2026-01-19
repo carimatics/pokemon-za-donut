@@ -286,7 +286,7 @@ describe('ErrorBoundary', () => {
 
     it('should handle very long stack traces', () => {
       const error = new Error('Test error')
-      error.stack = 'Error: Test error\n' + '    at test.js:1:1\n'.repeat(100)
+      error.stack = `Error: Test error\n${'    at test.js:1:1\n'.repeat(100)}`
       const { container } = render(<ErrorBoundary error={error} />)
 
       const details = container.querySelector('details')

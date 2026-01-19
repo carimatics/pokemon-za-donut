@@ -279,7 +279,7 @@ export function RecipeResultsTable({
                       <p className="text-xs font-medium text-gray-700 mb-1">使用きのみ:</p>
                       <p className="text-sm text-gray-600">{recipe.berries}</p>
                       <p className="text-xs text-gray-500 mt-1">きのみ個数: {recipe.berryCount}個</p>
-                      <p className="text-xs text-gray-500">合計カロリー: {recipe.totalCalories}cal / 合計レベル: Lv.{recipe.totalLevel}</p>
+                      <p className="text-xs text-gray-500">合計カロリー: {recipe.totalCalories}kcal / 合計レベル: Lv.{recipe.totalLevel}</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div className="text-center p-2 bg-pink-50 rounded">
@@ -323,12 +323,14 @@ export function RecipeResultsTable({
                 {headerGroup.headers.map(header => {
                   const meta = header.column.columnDef.meta as { width?: string }
                   const width = meta?.width || '120px'
+                  const toggleSorting = header.column.getToggleSortingHandler()
                   return (
-                    <div
+                    <button
                       key={header.id}
+                      type="button"
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 flex-shrink-0"
                       style={{ width }}
-                      onClick={header.column.getToggleSortingHandler()}
+                      onClick={toggleSorting}
                     >
                       <div className="flex items-center gap-1">
                         {header.isPlaceholder
@@ -342,7 +344,7 @@ export function RecipeResultsTable({
                           desc: ' ↓',
                         }[header.column.getIsSorted() as string] ?? null}
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>

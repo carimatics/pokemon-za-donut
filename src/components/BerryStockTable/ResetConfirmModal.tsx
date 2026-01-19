@@ -1,4 +1,4 @@
-import { useRef, type RefObject } from 'react'
+import { useRef, useId, type RefObject } from 'react'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface ResetConfirmModalProps {
@@ -15,6 +15,7 @@ export function ResetConfirmModal({
   returnFocusRef,
 }: ResetConfirmModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
 
   // Focus trap for modal
   useFocusTrap(modalRef, {
@@ -32,15 +33,16 @@ export function ResetConfirmModal({
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={onClose}
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal dialog with stopPropagation - keyboard handled by focus trap */}
       <div
         ref={modalRef}
         className="bg-white rounded-lg p-6 max-w-md mx-4"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="reset-modal-title"
+        aria-labelledby={titleId}
       >
-        <h3 id="reset-modal-title" className="text-lg font-semibold mb-4">
+        <h3 id={titleId} className="text-lg font-semibold mb-4">
           確認
         </h3>
         <p className="text-gray-700 mb-6">
