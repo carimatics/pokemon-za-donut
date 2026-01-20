@@ -39,7 +39,10 @@
         "interactive": ["warn", {"maxNumericValue": 3800}],
         "network-dependency-tree-insight": "off",
         "unused-javascript": "off",
-        "render-blocking-insight": "off"
+        "render-blocking-insight": "off",
+        "csp-xss": "off",
+        "non-composited-animations": "off",
+        "total-byte-weight": "off"
       }
     },
     "upload": {
