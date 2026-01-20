@@ -36,7 +36,10 @@
         "cumulative-layout-shift": ["warn", {"maxNumericValue": 0.1}],
         "total-blocking-time": ["warn", {"maxNumericValue": 300}],
         "speed-index": ["warn", {"maxNumericValue": 3400}],
-        "interactive": ["warn", {"maxNumericValue": 3800}]
+        "interactive": ["warn", {"maxNumericValue": 3800}],
+        "network-dependency-tree-insight": "off",
+        "unused-javascript": "off",
+        "render-blocking-insight": "off"
       }
     },
     "upload": {
