@@ -33,6 +33,22 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split React into its own chunk
+          react: ['react', 'react-dom'],
+          // Split TanStack libraries
+          tanstack: [
+            '@tanstack/react-router',
+            '@tanstack/react-table',
+            '@tanstack/react-virtual',
+          ],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
