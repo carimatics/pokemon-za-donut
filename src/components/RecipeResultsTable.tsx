@@ -29,12 +29,14 @@ interface RecipeResultsTableProps {
     berryCount: number
   }
   searchTime?: number | null
+  isSearching?: boolean
 }
 
 export function RecipeResultsTable({
   recipeRows,
   searchConditions,
   searchTime,
+  isSearching = false,
 }: RecipeResultsTableProps) {
   const isMobile = useIsMobile()
 
@@ -60,6 +62,7 @@ export function RecipeResultsTable({
       <RecipeResultsSummary
         resultCount={sortedRecipeRows.length}
         searchTime={searchTime}
+        isSearching={isSearching}
       />
 
       <RecipeSearchConditions
@@ -67,7 +70,7 @@ export function RecipeResultsTable({
         hasResults={sortedRecipeRows.length > 0}
       />
 
-      {sortedRecipeRows.length === 0 ? (
+      {isSearching ? null : sortedRecipeRows.length === 0 ? (
         <RecipeEmptyState
           hasSelectedDonuts={
             searchConditions !== undefined &&

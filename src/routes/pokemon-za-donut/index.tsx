@@ -165,6 +165,7 @@ function App() {
           recipeRows={recipeRows}
           searchConditions={searchConditions}
           searchTime={searchTime}
+          isSearching={isSearching}
         />
       )}
 
